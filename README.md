@@ -24,5 +24,5 @@ Phần mềm Tính thuế là phần mềm quản lý thuế thông minh, giúp 
 - Giao diện người dùng: các công nghệ web như HTML, CSS, JavaScript.
 - Cơ sở dữ liệu: MySQL
 # Biểu đồ
-- User case: 
+- User case: https://drive.google.com/file/d/1IqttpIUA43KkLsiMX_sHOHzeu1Tta3dW/view?usp=sharing
 - Stories: 
