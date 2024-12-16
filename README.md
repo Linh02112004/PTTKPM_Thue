@@ -26,3 +26,5 @@ Phần mềm Tính thuế là phần mềm quản lý thuế thông minh, giúp 
 # Biểu đồ
 - User case: https://drive.google.com/file/d/1IqttpIUA43KkLsiMX_sHOHzeu1Tta3dW/view?usp=sharing
 - Stories: 
+# Thiết kế giao diện
+https://balsamiq.cloud/s15t7bt/pa7tbtv/r5F4B
