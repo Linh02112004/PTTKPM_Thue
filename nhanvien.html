@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phần mềm tính thuế</title>
+  <link rel="stylesheet" href="./styles/nhanvien.css">
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="profile-pic" id="profile-pic"></div>
+      <a class="update-photo" onclick="updatePhoto()">Cập nhật ảnh</a>
+      <p>Nhân viên</p>
+      <button class="button active" onclick="setActiveButton(this)">Nhập thông tin</button>
+      <button class="button " onclick="setActiveButton(this)">Xem lương và thuế cá nhân</button>
+      <button class="button" onclick="setActiveButton(this)">Tính thử thuế</button>
+    </div>
+    
+    <div class="content">
+      <div id="info-section">
+        <!-- Phần nhập thông tin -->
+        <div class="input-group">
+          <label for="name">Họ và tên:</label>
+          <input type="text" id="name">
+        </div>
+        <div class="input-group">
+          <label for="employee-id">Mã số nhân viên:</label>
+          <input type="text" id="employee-id">
+        </div>
+        <div class="input-group">
+          <label for="hometown">Quê quán:</label>
+          <input type="text" id="hometown">
+        </div>
+        <div class="input-group">
+          <label for="address">Địa chỉ hiện tại:</label>
+          <input type="text" id="address">
+        </div>
+        <div class="input-group">
+          <label for="phone">Số điện thoại:</label>
+          <input type="text" id="phone">
+        </div>
+        <div class="input-group">
+          <label for="birthdate">Ngày tháng năm sinh:</label>
+          <input type="date" id="birthdate">
+        </div>
+        <div class="input-group">
+          <label for="dependents">Nhập số người phụ thuộc:</label>
+          <input type="number" id="dependents" value="0" min="0">
+        </div>
+        <div class="input-group">
+          <label>Giới tính:</label>
+          <div class="radio-group">
+            <label><input type="radio" name="gender" value="male"><span></span> Nam</label>
+            <label><input type="radio" name="gender" value="female"><span></span> Nữ</label>
+          </div>
+        </div>
+        <div class="update-button-container">
+          <button class="update-button" onclick="showNotification()">Cập nhật</button>
+        </div>
+      </div>
+
+      <div id="salary-section" style="display: none;">
+        <!-- Phần xem lương và thuế cá nhân -->
+        <div class="header">
+          <button class="calculate-button" onclick="calculateTaxYear()">Quyết toán thuế</button>
+          <div>
+              <label for="search-year">Năm:</label>
+              <input type="text" id="search-year" placeholder="Nhập năm">
+              <button class="search-button" onclick="searchSalary()">Tìm kiếm</button>
+          </div>
+      </div>
+
+        <table id="salary-table" style="display: none;">
+          <thead>
+            <tr>
+              <th>Tháng</th>
+              <th>Họ tên</th>
+              <th>Chức vụ</th>
+              <th>Số lương</th>
+              <th>Thuế cần nộp</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Các hàng sẽ được thêm qua JavaScript -->
+          </tbody>
+        </table>
+      </div>    
+
+      <div id="tax-section" style="display: none;">
+        <div class="input-group">
+          <label for="salary">Nhập số lương:</label>
+          <input type="number" id="salary" placeholder="Nhập số lương" required>
+        </div>
+        <div class="input-group">
+          <label for="dependent">Nhập số người phụ thuộc:</label>
+          <input type="number" id="dependent" value="0" required>
+        </div>
+        <div class="calculate-button-container">
+          <button class="calculate-button" onclick="calculateTax()">Tính thuế</button>
+        </div>
+        <div id="tax-result">
+          <h3>Số thuế bạn phải nộp là:</h3>
+          <p id="tax-amount" style="font-weight: bold; font-size: 1.2em;"></p>
+          <p id="tax-amount-words" style="font-style: italic;"></p>
+          <p id="tax-details" style="margin-top: 10px;"></p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification">
+    <p>Bạn vừa cập nhật thông tin cá nhân. Bạn có muốn lưu thay đổi không?</p>
+    <button class="confirm-button" onclick="updateInfo()">Có</button>
+    <button class="cancel-button" onclick="cancelUpdate()">Không</button>
+  </div>
+
+  <input type="file" id="photo-upload" style="display: none;" accept="image/*" onchange="loadPhoto(event)">
+
+  <div id="detail-modal" class="modal">
+    <h3>Chi tiết lương tháng</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tháng</th>
+          <th>Họ tên</th>
+          <th>Lương</th>
+          <th>Các khoản giảm trừ</th>
+          <th>Thuế cần nộp</th>
+        </tr>
+      </thead>
+      <tbody id="detail-table-body">
+        <!-- Dữ liệu sẽ được thêm vào đây qua JavaScript -->
+      </tbody>
+    </table>
+    <button onclick="closeDetailModal()">Đóng</button>
+  </div>
+
+  <div id="modal" class="modal">
+    <h3>Thông tin quyết toán thuế</h3>
+    <div>
+      <label>Năm:</label>
+      <span id="taxYear"></span><br>
+      <label>Mã số nhân viên:</label>
+      <span id="employeeId"></span><br>
+      <label>Mã số thuế:</label>
+      <span id="taxCode"></span><br>
+      <label>Họ tên:</label>
+      <span id="fullName"></span><br>
+      <label>Thuế còn thiếu:</label>
+      <span id="taxDue"></span><br>
+      <label>Thuế đã tạm nộp:</label>
+      <span id="taxPaid"></span><br>
+      <label>Thuế hoàn trả:</label>
+      <span id="taxRefund"></span><br>
+    </div>
+    <button onclick="closeModal()">Đóng</button>
+  </div>
+  <script src="./javascript/nhanvien.js"></script>
+</body>
+</html>

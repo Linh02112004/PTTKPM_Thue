@@ -1,0 +1,284 @@
+/* Cấu trúc chung */
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  background-color: #f0f0f0;
+}
+
+/* Container chính */
+.container {
+  width: 100%;
+  display: flex;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 15%;
+  background-color: #d9eaf7;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-pic {
+  width: 100px;
+  height: 100px;
+  background-color: #ccc;
+  border-radius: 50%;
+  margin-bottom: 5px;
+  background-size: cover;
+  background-position: center;
+}
+
+.update-photo {
+  font-size: 14px;
+  color: #005bbb;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.update-photo:hover {
+  text-decoration: underline;
+}
+
+.sidebar p {
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+.button {
+  background-color: #005bbb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px 0;
+  width: 90%;
+}
+
+.button:hover {
+  background-color: #004080;
+}
+
+.active {
+  background-color: #004080;
+  font-weight: bold;
+}
+
+/* Content */
+.content {
+  width: 85%;
+  padding: 15px;
+  position: relative;
+}
+
+/* Nhóm input */
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.input-group label {
+  width: 150px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.input-group input, .input-group select {
+  width: calc(100% - 160px);
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* Radio button */
+.radio-group label {
+  display: inline-block;
+  margin-right: 10px;
+  font-weight: normal;
+  font-size: 16px;
+  position: relative;
+}
+
+.radio-group input[type="radio"] {
+  display: none;
+}
+
+.radio-group input[type="radio"] + span {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #005bbb;
+  display: inline-block;
+  margin-right: 5px;
+  position: relative;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"]:checked + span {
+  background-color: #005bbb;
+}
+
+.radio-group input[type="radio"]:checked + span:before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Nút cập nhật */
+.update-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.update-button {
+  background-color: #005bbb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 50%;
+}
+
+.update-button:hover {
+  background-color: #004080;
+}
+
+/* Thông báo */
+.notification {
+  display: none;
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.notification .confirm-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.notification .cancel-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Bảng */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background-color: #d9eaf7;
+}
+
+.eye-icon {
+  cursor: pointer;
+  color: #005bbb;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 400px;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.modal.active {
+  display: block;
+}
+
+.modal button {
+  margin-top: 10px;
+  background-color: #005bbb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* Nút tìm kiếm và tính thuế */
+.search-button, .calculate-button {
+  background-color: #005bbb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px 0;
+  width: auto;
+}
+
+/* Kết quả thuế */
+#tax-result {
+  border: 1px solid #005bbb;
+  padding: 15px;
+  margin-top: 20px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
