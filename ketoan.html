@@ -73,8 +73,10 @@
             <!-- Tab: Quản lý tài khoản -->
             <div id="tab-account-management" class="tab-content" style="display: none;">
                 <h2>Quản lý tài khoản</h2>
+                <!-- Nút Tạo tài khoản -->
                 <button class="search-btn" onclick="openCreateAccountForm()">Tạo tài khoản mới</button>
 
+                <!-- Cửa sổ nhập thông tin tài khoản -->
                 <div id="create-account-form" class="popup" style="display: none;">
                     <h3>Nhập thông tin tài khoản</h3>
                     <label>Họ và tên:</label>
@@ -97,12 +99,13 @@
                     </select><br>
                     <label>CCCD:</label>
                     <input type="text" id="new-cccd" placeholder="Số CCCD" maxlength="12" oninput="validateCCCD(event)" required>
-                    <button class="search-btn" onclick="createAccount(event)">Lưu</button>
+                    <button class="search-btn" onclick="createAccount()">Lưu</button>
                     <button class="search-btn" onclick="closeCreateAccountForm()">Hủy</button>
                 </div>
 
                 <hr>
 
+                <!-- Danh sách tài khoản -->
                 <div>
                     <h3>Danh sách tài khoản</h3>
                     <table border="1">
@@ -228,7 +231,7 @@
                     <input type="number" id="yearInput" class="filter-input" placeholder="Nhập năm">
                     <button class="search-btn" onclick="search()">Tìm kiếm</button>
                 </div>
-            
+
                 <div id="table-container" class="table-container" style="display: none;">
                     <table>
                         <thead>
@@ -237,10 +240,8 @@
                                 <th>Họ tên</th>
                                 <th>MSNV</th>
                                 <th>MS thuế</th>
-                                <th>Tổng lương</th>
-                                <th>Tổng thuế đã nộp</th>
-                                <th>Tổng thuế phải nộp</th>
-                                <th>Quyết toán</th>
+                                <th>Lương</th>
+                                <th>Thuế</th>
                             </tr>
                         </thead>
                         <tbody id="table-body">
@@ -248,20 +249,13 @@
                         </tbody>
                     </table>
                 </div>
-            
+
                 <footer id="footer" style="display: none;">
                     <p id="total-salary">Tổng lương: 0</p>
-                    <p id="total-tax-paid">Tổng thuế đã nộp: 0</p>
-                    <p id="total-tax-due">Tổng thuế phải nộp: 0</p>
-                    <p id="total-reconciliation">Tổng quyết toán: 0</p>
-                    <label for="fileFormat">Chọn định dạng xuất:</label>
-                    <select id="fileFormat">
-                        <option value="csv">CSV (Excel)</option>
-                        <option value="pdf">PDF</option>
-                    </select>
-                    <button id="exportButton">Xuất báo cáo</button>
+                    <p id="total-tax">Tổng thuế: 0</p>
+                    <a href="#" class="export">Xuất báo cáo</a>
                 </footer>
-            </div>            
+            </div>
         </div>
     </div>
 
