@@ -193,7 +193,12 @@ function search() {
 }
 
 // Dữ liệu tài khoản
-const accountData = [];
+let accountData = JSON.parse(localStorage.getItem("accountData")) || [];
+
+// Lưu dữ liệu vào LocalStorage
+function saveToLocalStorage() {
+  localStorage.setItem("accountData", JSON.stringify(accountData));
+}
 
 // Hiển thị hộp nhập thông tin tài khoản
 function openCreateAccountForm() {
@@ -233,7 +238,8 @@ function createAccount(event) {
 
   const account = { name, id, password, role, department, cccd };
   accountData.push(account);
-  updateAccountTable();
+  saveToLocalStorage(); // Lưu dữ liệu vào LocalStorage
+  updateAccountTable(); // Cập nhật bảng hiển thị
 
   // Đóng form sau khi tạo xong
   closeCreateAccountForm();
@@ -255,68 +261,18 @@ function updateAccountTable() {
       <td>${account.role}</td>
       <td>${account.cccd}</td>
       <td>
-        <button onclick="editAccount(${index})"><i class="fas fa-eye"></i></button>
-        <button onclick="deleteAccount(${index})"><i class="fas fa-trash"></i></button>
+        <button onclick="editAccount(${index})">Chỉnh sửa</button>
+        <button onclick="deleteAccount(${index})">Xóa</button>
       </td>
     `;
     tableBody.appendChild(row); // Thêm dòng vào bảng
   });
 }
 
-
-// Xóa tài khoản
-function deleteAccount(index) {
-  const confirmDelete = confirm("Bạn có chắc chắn muốn xóa tài khoản này?");
-  if (confirmDelete) {
-    accountData.splice(index, 1); // Xóa tài khoản
-    updateAccountTable();
-    alert("Tài khoản đã bị xóa!");
-  }
-}
-
-// Chỉnh sửa tài khoản
-function editAccount(index) {
-  const account = accountData[index];
-  document.getElementById("new-name").value = account.name;
-  document.getElementById("new-id").value = account.id;
-  document.getElementById("new-password").value = account.password;
-  document.getElementById("new-role").value = account.role;
-  document.getElementById("new-department").value = account.department;
-  document.getElementById("new-cccd").value = account.cccd;
-
-  openCreateAccountForm();
-
-  // Thay đổi hành động nút "Lưu" để cập nhật tài khoản
-  const saveButton = document.querySelector("#create-account-form button[onclick='createAccount()']");
-  saveButton.textContent = "Cập nhật";
-  saveButton.setAttribute("onclick", `updateAccount(${index})`);
-}
-
-// Cập nhật tài khoản sau khi chỉnh sửa
-function updateAccount(index) {
-  const name = document.getElementById("new-name").value;
-  const id = document.getElementById("new-id").value;
-  const password = document.getElementById("new-password").value;
-  const role = document.getElementById("new-role").value;
-  const department = document.getElementById("new-department").value;
-  const cccd = document.getElementById("new-cccd").value;
-
-  if (!name || !id || !password || !cccd || cccd.length !== 12 || !/^\d+$/.test(cccd)) {
-    alert("Vui lòng nhập đủ thông tin và đảm bảo CCCD là 12 chữ số.");
-    return;
-  }
-
-  accountData[index] = { name, id, password, role, department, cccd }; // Cập nhật tài khoản
+// Tải dữ liệu từ LocalStorage khi trang được tải
+window.onload = () => {
   updateAccountTable();
-
-  // Đổi nút "Cập nhật" trở lại "Lưu"
-  const saveButton = document.querySelector("#create-account-form button[onclick^='updateAccount']");
-  saveButton.textContent = "Lưu";
-  saveButton.setAttribute("onclick", "createAccount()");
-
-  closeCreateAccountForm();
-  alert("Tài khoản đã được cập nhật!");
-}
+};
 
 // Hàm để kiểm tra và chỉ cho phép nhập số
 function validateCCCD(event) {
