@@ -370,7 +370,7 @@ function searchEmployees() {
   }
 
   const employees = taxData[department] || [];
-  const tableBody = document.getElementById("employee-table-body");
+  const tableBody = document.getElementById("employee-table-body1");
   tableBody.innerHTML = ""; // Xóa nội dung cũ
 
   if (employees.length === 0) {
