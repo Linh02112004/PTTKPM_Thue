@@ -15,11 +15,16 @@ CREATE TABLE users (
     phone VARCHAR(10) NOT NULL UNIQUE,
     cccd VARCHAR(12) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    user_type ENUM('ke-toan', 'nhan-vien', 'truong-phong') NOT NULL,
     department ENUM('marketing', 'sales', 'nhân sự', 'kinh doanh') NOT NULL,
     position ENUM('nhân viên') NOT NULL
 );
 
+CREATE TABLE user_roles (
+    id CHAR(10), 
+    user_type ENUM('ke-toan', 'nhan-vien', 'truong-phong') NOT NULL,
+    PRIMARY KEY (id, user_type),
+    FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
+);
 
 CREATE TABLE monthTax (
     id CHAR(10), 
