@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,36 +9,57 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles/index.css">
 </head>
+
 <body>
     <header>
         <a href="#" onclick="showLogin()" class="register-button">Đăng Nhập</a>
     </header>
     <main>
-        <div class="welcome-message">Chào mừng bạn đến với phần mềm tính thuế thu nhập cá nhân</div>
+        <div class="welcome-message" id="welcome-message">Chào mừng bạn đến với phần mềm tính thuế thu nhập cá nhân
+        </div>
 
         <!-- Form Đăng Nhập -->
         <div class="form-container" id="login-form" style="display: none;">
             <h2>Đăng Nhập</h2>
-            <div>
-                <label for="user-type">Chọn chức vụ:<span class="required">*</span></label>
-                <select id="user-type">
-                    <option value="nhan-vien">Nhân Viên</option>
-                    <option value="truong-phong">Trưởng Phòng</option>
-                    <option value="ke-toan">Kế Toán</option>
-                </select>
-            </div>
-            <div>
-                <label for="cccd">CCCD:<span class="required">*</span></label>
-                <input type="text" id="cccd" maxlength="12" oninput="validateCCCD()">
-                <div id="cccd-error" class="error-message" style="display: none;">CCCD phải có 12 số.</div>
-            </div>
-            <div>
-                <label for="password">Mật Khẩu:<span class="required">*</span></label>
-                <input type="password" id="password">
-            </div>
-            <button id="button" onclick="login()">Đăng Nhập</button>
+            <form method="POST" action="./PHP/index.php">
+                <div>
+                    <label for="user-type">Chọn chức vụ:<span class="required">*</span></label>
+                    <select id="user-type" name="user-type" required>
+                        <option value="nhan-vien">Nhân Viên</option>
+                        <option value="truong-phong">Trưởng Phòng</option>
+                        <option value="ke-toan">Kế Toán</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="cccd">CCCD:<span class="required">*</span></label>
+                    <input type="text" id="cccd" name="cccd" maxlength="12" oninput="validateCCCD()" required>
+                    <div id="cccd-error" class="error-message" style="display: none;">CCCD phải có 12 số.</div>
+                </div>
+                <div>
+                    <label for="password">Mật Khẩu:<span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Đăng Nhập</button>
+            </form>
         </div>
     </main>
-    <script src="./javascript/index.js"></script>
+
+    <script>
+        function validateCCCD() {
+            const cccd = document.getElementById('cccd').value;
+            const errorMessage = document.getElementById('cccd-error');
+            if (cccd.length !== 12 || !/^\d+$/.test(cccd)) {
+                errorMessage.style.display = 'block';
+            } else {
+                errorMessage.style.display = 'none';
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('welcome-message').style.display = 'none';
+        }
+    </script>
 </body>
+
 </html>
