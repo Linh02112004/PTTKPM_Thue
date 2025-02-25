@@ -1,26 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phần mềm thuế thu nhập</title>
-    <link rel="icon" href="./Anh/header/anh1.jpg" type="image/jpeg">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-
     <link rel="stylesheet" href="./styles/ketoan.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
     <div class="container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <!-- Thông tin người dùng -->
             <div class="profile">
                 <div class="profile-pic-container">
                     <div class="profile-pic" id="profile-pic"></div>
                     <div class="profile-pic-overlay"></div>
                 </div>
-                <input type="file" id="photo-input" onchange="loadPhoto(event)" accept="image/*" style="display: none;">
+                <input type="file" id="photo-input" accept="image/*" style="display: none;">
                 <a class="update-photo" onclick="openPhotoInput()">Cập nhật ảnh</a>
                 <p>Kế toán</p>
             </div>
@@ -35,21 +33,30 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Tab: Quản lý nhân viên -->
-            <div id="tab-employee-management" class="tab-content" style="display: none;">
+
+            <!-- Quản lý nhân viên -->
+            <div id="tab-employee-management" class="tab-content" style="display: block;">
                 <h2>Quản lý nhân viên</h2>
+
+                <!-- Chọn phòng ban -->
                 <div class="filter-section">
-                    <label for="department-select">Chọn phòng ban:</label>
-                    <select id="department-select">
-                        <option value="marketing">Phòng Marketing</option>
-                        <option value="sales">Phòng Kinh doanh</option>
-                        <option value="hr">Phòng Nhân sự</option>
-                        <option value="sales">Phòng Sales</option>
-                    </select>
+                    <form action="ketoan.php" method="GET">
+                        <input type="hidden" name="action" value="get_employees">
+                        <label for="department-select">Chọn phòng ban:</label>
+                        <select id="department-select" name="department">
+                            <option value="all">Tất cả</option>
+                            <option value="marketing">Phòng Marketing</option>
+                            <option value="sales">Phòng Sales</option>
+                            <option value="nhân sự">Phòng Nhân sự</option>
+                            <option value="kinh doanh">Phòng Kinh doanh</option>
+                        </select>
+                        <button type="submit" "onclick=" loadEmployeeData()">Xem nhân viên</button>
+                    </form>
                 </div>
 
+                <!-- Bảng hiển thị nhân viên -->
                 <div class="table-container">
-                    <table>
+                    <table border="1">
                         <thead>
                             <tr>
                                 <th>Họ tên</th>
@@ -64,50 +71,75 @@
                             </tr>
                         </thead>
                         <tbody id="employee-table-body">
-                            <!-- Hàng dữ liệu sẽ được thêm bằng JavaScript -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Tab: Quản lý tài khoản -->
+            <!-- Quản lý tài khoản -->
             <div id="tab-account-management" class="tab-content" style="display: none;">
                 <h2>Quản lý tài khoản</h2>
-                <!-- Nút Tạo tài khoản -->
+
+                <!-- Nút tạo tài khoản -->
                 <button class="search-btn" onclick="openCreateAccountForm()">Tạo tài khoản mới</button>
 
-                <!-- Cửa sổ nhập thông tin tài khoản -->
+                <!-- Form tạo tài khoản -->
                 <div id="create-account-form" class="popup" style="display: none;">
                     <h3>Nhập thông tin tài khoản</h3>
-                    <label>Họ và tên:</label>
-                    <input type="text" id="new-name" placeholder="Nguyễn Văn A"><br>
-                    <label>Mã số nhân viên:</label>
-                    <input type="text" id="new-id" placeholder="12345"><br>
-                    <label>Mật khẩu:</label>
-                    <input type="text" id="new-password" placeholder="Mật khẩu"><br>
-                    <label>Chức vụ:</label>
-                    <select id="new-role">
-                        <option value="Nhân viên">Nhân viên</option>
-                        <option value="Quản lý">Quản lý</option>
-                    </select><br>
-                    <label>Phòng ban:</label>
-                    <select id="new-department">
-                        <option value="marketing">Marketing</option>
-                        <option value="sales">Sales</option>
-                        <option value="hr">Nhân sự</option>
-                        <option value="business">Kinh doanh</option>
-                    </select><br>
-                    <label>CCCD:</label>
-                    <input type="text" id="new-cccd" placeholder="Số CCCD" maxlength="12" oninput="validateCCCD(event)" required>
-                    <button class="search-btn" onclick="createAccount()">Lưu</button>
-                    <button class="search-btn" onclick="closeCreateAccountForm()">Hủy</button>
+                    <form action="ketoan.php" method="POST">
+                        <input type="hidden" name="action" value="create_account">
+
+                        <label>Mã số nhân viên:</label>
+                        <input type="text" name="id" required>
+                        <br>
+
+                        <label>Họ và tên:</label>
+                        <input type="text" name="full_name" required>
+                        <br>
+
+                        <label>Mật khẩu:</label>
+                        <input type="password" name="password" required>
+                        <br>
+
+                        <label>Số điện thoại:</label>
+                        <input type="text" name="phone" pattern="\d{10}" placeholder="Nhập 10 chữ số" required>
+                        <br>
+
+                        <label>CCCD:</label>
+                        <input type="text" name="cccd" pattern="\d{12}" placeholder="Nhập 12 chữ số" required>
+                        <br>
+
+                        <label>Phòng ban:</label>
+                        <select name="department">
+                            <option value="marketing">Marketing</option>
+                            <option value="sales">Sales</option>
+                            <option value="nhân sự">Nhân sự</option>
+                            <option value="kinh doanh">Kinh doanh</option>
+                        </select>
+                        <br>
+
+                        <label>Chức vụ:</label>
+                        <select name="position">
+                            <option value="nhân viên">Nhân viên</option>
+                        </select>
+                        <br>
+
+                        <label>Vai trò hệ thống:</label>
+                        <select name="role">
+                            <option value="ke-toan">Kế toán</option>
+                            <option value="nhan-vien">Nhân viên</option>
+                            <option value="truong-phong">Trưởng phòng</option>
+                        </select>
+                        <br>
+
+                        <button class="search-btn" type="submit">Lưu</button>
+                        <button class="search-btn" type="button" onclick="closeCreateAccountForm()">Hủy</button>
+                    </form>
                 </div>
 
-                <hr>
-
                 <!-- Danh sách tài khoản -->
-                <div>
-                    <h3>Danh sách tài khoản</h3>
+                <h3>Danh sách tài khoản</h3>
+                <div class="table-container">
                     <table border="1">
                         <thead>
                             <tr>
@@ -120,7 +152,6 @@
                             </tr>
                         </thead>
                         <tbody id="account-table-body">
-                            <!-- Tài khoản sẽ được hiển thị tại đây -->
                         </tbody>
                     </table>
                 </div>
@@ -129,41 +160,46 @@
             <!-- Tab: Thiết lập giảm trừ -->
             <div id="tab-deduction-setup" class="tab-content" style="display: none;">
                 <h2>Thiết lập giảm trừ</h2>
-                <div class="filter-section">
-                    <label for="deduction-month">Chọn tháng:</label>
-                    <select class="filter-input" id="deduction-month">
-                        <option value="1">Tháng 1</option>
-                        <option value="2">Tháng 2</option>
-                        <option value="3">Tháng 3</option>
-                        <option value="4">Tháng 4</option>
-                        <option value="5">Tháng 5</option>
-                        <option value="6">Tháng 6</option>
-                        <option value="7">Tháng 7</option>
-                        <option value="8">Tháng 8</option>
-                        <option value="9">Tháng 9</option>
-                        <option value="10">Tháng 10</option>
-                        <option value="11">Tháng 11</option>
-                        <option value="12">Tháng 12</option>
-                    </select>
+                <form id="deduction-form">
+                    <div class="filter-section">
+                        <label for="deduction-month">Chọn tháng:</label>
+                        <select class="filter-input" id="deduction-month" name="month">
+                            <option value="">Chọn tháng</option>
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
 
-                    <label for="deduction-year">Nhập năm:</label>
-                    <input type="number" id="deduction-year" class="filter-input" placeholder="Nhập năm">
-                    <button class="search-btn" onclick="searchDeduction()">Tìm kiếm</button>
-                </div>
+                        <label for="deduction-year">Nhập năm:</label>
+                        <input type="number" id="deduction-year" name="year" class="filter-input" placeholder="Nhập năm"
+                            min="2000" max="2100">
 
-                <div class="deduction-section">
-                    <div class="deduction-box">
-                        <br>
-                        <label for="self-deduction">Giảm trừ cho bản thân:</label>
-                        <input type="number" id="self-deduction" class="filter-input" placeholder="Nhập mức giảm trừ" min="0">
-                        <br><br>
-                        <label for="dependent-deduction">Giảm trừ người phụ thuộc:</label>
-                        <input type="number" id="dependent-deduction" class="filter-input" placeholder="Nhập mức giảm trừ" min="0">
+                        <h3>Mức giảm trừ thu nhập</h3>
+                        <div class="deduction-box">
+                            <label for="self-deduction">Giảm trừ bản thân (VND):</label>
+                            <input type="number" id="self-deduction" name="selfDeduction" class="filter-input"
+                                placeholder="Nhập mức giảm trừ" min="0">
+
+                            <label for="dependent-deduction">Giảm trừ người phụ thuộc (VND):</label>
+                            <input type="number" id="dependent-deduction" name="dependentDeduction" class="filter-input"
+                                placeholder="Nhập mức giảm trừ" min="0">
+                        </div>
+
+                        <div>
+                            <button type="button" class="search-btn" id="setup-deduction-btn"
+                                onclick="setupDeduction()">Thiết lập</button>
+                        </div>
                     </div>
-                    <div>
-                        <button class="search-btn" onclick="setupDeduction()">Thiết lập</button>
-                    </div>
-                </div>
+                </form>
             </div>
 
             <!-- Tab: Lương và Thuế -->
@@ -172,6 +208,7 @@
                 <div class="filter-section">
                     <label for="monthInput">Chọn tháng:</label>
                     <select id="monthInput" class="filter-input">
+                        <option value="">Chọn tháng</option>
                         <option value="01">Tháng 1</option>
                         <option value="02">Tháng 2</option>
                         <option value="03">Tháng 3</option>
@@ -187,52 +224,65 @@
                     </select>
 
                     <label for="yearInputs">Nhập năm:</label>
-                    <input type="number" id="yearInputs" class="filter-input" placeholder="Nhập năm" />
+                    <input type="number" id="yearInputs" class="filter-input" placeholder="Nhập năm" min="2000"
+                        max="2100" />
 
                     <label for="departmentSalaryInput">Chọn phòng ban:</label>
                     <select id="departmentSalaryInput" class="filter-input">
+                        <option value="">Chọn phòng ban</option>
                         <option value="marketing">Phòng Marketing</option>
                         <option value="sales">Phòng Sales</option>
                         <option value="hr">Phòng Nhân sự</option>
                         <option value="business">Phòng Kinh doanh</option>
+                        <option value="accounting">Phòng Kế toán</option>
                     </select>
 
                     <button class="search-btn" onclick="searchEmployees()">Tìm kiếm</button>
                 </div>
 
                 <div id="employee-table-container" style="display: none;">
+                    <h3>Danh sách nhân viên</h3>
                     <table>
                         <thead>
                             <tr>
                                 <th>Họ và tên</th>
                                 <th>MSNV</th>
                                 <th>MS thuế</th>
-                                <th>Lương</th>
-                                <th>Thuế</th>
+                                <th>Lương (VND)</th>
+                                <th>Thuế (VND)</th>
+                                <th>Lương thực nhận (VND)</th>
                             </tr>
                         </thead>
                         <tbody id="employee-table-body1"></tbody>
                     </table>
                 </div>
-                <button class="search-btn" onclick="saveSalaries()" style="display: none;" id="save-salary-btn">Lưu</button>
+
+                <button class="search-btn" onclick="saveSalaries()" style="display: none;"
+                    id="save-salary-btn">Lưu</button>
             </div>
 
             <!-- Tab: Xem quyết toán thuế -->
-            <div id="tab-tax-summary" class="tab-content">
+            <div id="tab-tax-summary" class="tab-content" style="display: none;">
                 <h2>Xem quyết toán thuế</h2>
                 <div class="filter-section">
                     <label for="departmentInput">Chọn phòng ban:</label>
                     <select class="filter-input" id="departmentInput">
+                        <option value="">Chọn phòng ban</option>
                         <option value="marketing">Phòng Marketing</option>
-                        <option value="sales">Phòng Kinh doanh</option>
-                        <option value="hr">Phòng Nhân sự</option>
+                        <option value="business">Phòng Kinh doanh</option>
                         <option value="sales">Phòng Sales</option>
+                        <option value="hr">Phòng Nhân sự</option>
+                        <option value="accounting">Phòng Kế toán</option>
                     </select>
-                    <input type="number" id="yearInput" class="filter-input" placeholder="Nhập năm">
+
+                    <input type="number" id="yearInput" class="filter-input" placeholder="Nhập năm (VD: 2024)"
+                        min="2000" max="2100">
+
                     <button class="search-btn" onclick="search()">Tìm kiếm</button>
                 </div>
 
                 <div id="table-container" class="table-container" style="display: none;">
+                    <h3>Kết quả quyết toán</h3>
                     <table>
                         <thead>
                             <tr>
@@ -240,8 +290,9 @@
                                 <th>Họ tên</th>
                                 <th>MSNV</th>
                                 <th>MS thuế</th>
-                                <th>Lương</th>
-                                <th>Thuế</th>
+                                <th>Lương (VND)</th>
+                                <th>Thuế (VND)</th>
+                                <th>Lương thực nhận (VND)</th>
                             </tr>
                         </thead>
                         <tbody id="table-body">
@@ -251,15 +302,19 @@
                 </div>
 
                 <footer id="footer" style="display: none;">
-                    <p id="total-salary">Tổng lương: 0</p>
-                    <p id="total-tax">Tổng thuế: 0</p>
-                    <a href="#" class="export">Xuất báo cáo</a>
+                    <p id="total-salary">Tổng lương: 0 VND</p>
+                    <p id="total-tax">Tổng thuế: 0 VND</p>
+                    <p id="total-net-salary">Tổng lương thực nhận: 0 VND</p>
+                    <button class="export" onclick="exportReport()">Xuất báo cáo</button>
                 </footer>
             </div>
+
         </div>
     </div>
 
     <!-- Script -->
-    <script src="./javascript/ketoan.js"></script>
+    <script src="script.js"></script>
+
 </body>
+
 </html>

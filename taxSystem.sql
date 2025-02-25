@@ -17,6 +17,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     department ENUM('marketing', 'sales', 'nhân sự', 'kinh doanh') NOT NULL,
     position ENUM('nhân viên') NOT NULL
+    avatar VARCHAR(255) DEFAULT NULL
 );
 
 CREATE TABLE user_roles (
