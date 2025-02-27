@@ -27,12 +27,22 @@ CREATE TABLE user_roles (
     FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE deduction (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    month TINYINT,                   
+    year YEAR NOT NULL,         
+    selfDeduction DECIMAL(15,2) NOT NULL,       
+    dependentDeduction DECIMAL(15,2) NOT NULL,  
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE monthTax (
     id CHAR(10), 
     month TINYINT NOT NULL, -- Tháng sẽ giới hạn từ 1-12 bằng ứng dụng
     year YEAR NOT NULL, -- Dùng kiểu dữ liệu YEAR thay vì INT
     salary DECIMAL(15,2) NOT NULL,
     tax DECIMAL(15,2) NOT NULL,
+    netSalary DECIMAL(15,2) NOT NULL,
     PRIMARY KEY (id, month, year),
     FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -43,6 +53,7 @@ CREATE TABLE yearTax (
     year YEAR NOT NULL,
     salary DECIMAL(15,2) NOT NULL,
     tax DECIMAL(15,2) NOT NULL,
+    netSalary DECIMAL(15,2) NOT NULL,
     PRIMARY KEY (id, year),
     FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
 )
