@@ -40,8 +40,7 @@
 
                 <!-- Chọn phòng ban -->
                 <div class="filter-section">
-                    <form action="ketoan.php" method="GET">
-                        <input type="hidden" name="action" value="get_employees">
+                    <form id="employee-form">
                         <label for="department-select">Chọn phòng ban:</label>
                         <select id="department-select" name="department">
                             <option value="all">Tất cả</option>
@@ -50,7 +49,6 @@
                             <option value="nhân sự">Phòng Nhân sự</option>
                             <option value="kinh doanh">Phòng Kinh doanh</option>
                         </select>
-                        <button type="submit" "onclick=" loadEmployeeData()">Xem nhân viên</button>
                     </form>
                 </div>
 
@@ -206,38 +204,39 @@
             <div id="tab-tax-calculation" class="tab-content" style="display: none;">
                 <h2>Lương và Thuế</h2>
                 <div class="filter-section">
-                    <label for="monthInput">Chọn tháng:</label>
-                    <select id="monthInput" class="filter-input">
-                        <option value="">Chọn tháng</option>
-                        <option value="01">Tháng 1</option>
-                        <option value="02">Tháng 2</option>
-                        <option value="03">Tháng 3</option>
-                        <option value="04">Tháng 4</option>
-                        <option value="05">Tháng 5</option>
-                        <option value="06">Tháng 6</option>
-                        <option value="07">Tháng 7</option>
-                        <option value="08">Tháng 8</option>
-                        <option value="09">Tháng 9</option>
-                        <option value="10">Tháng 10</option>
-                        <option value="11">Tháng 11</option>
-                        <option value="12">Tháng 12</option>
-                    </select>
+                    <form id="salaryTaxForm" method="POST" action="ketoan.php?action=calculate_tax">
+                        <label for="monthInput">Chọn tháng:</label>
+                        <select id="monthInput" name="month" class="filter-input" required>
+                            <option value="">Chọn tháng</option>
+                            <option value="01">Tháng 1</option>
+                            <option value="02">Tháng 2</option>
+                            <option value="03">Tháng 3</option>
+                            <option value="04">Tháng 4</option>
+                            <option value="05">Tháng 5</option>
+                            <option value="06">Tháng 6</option>
+                            <option value="07">Tháng 7</option>
+                            <option value="08">Tháng 8</option>
+                            <option value="09">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
 
-                    <label for="yearInputs">Nhập năm:</label>
-                    <input type="number" id="yearInputs" class="filter-input" placeholder="Nhập năm" min="2000"
-                        max="2100" />
+                        <label for="yearInputs">Nhập năm:</label>
+                        <input type="number" id="yearInputs" name="year" class="filter-input" placeholder="Nhập năm"
+                            min="2000" max="2100" required />
 
-                    <label for="departmentSalaryInput">Chọn phòng ban:</label>
-                    <select id="departmentSalaryInput" class="filter-input">
-                        <option value="">Chọn phòng ban</option>
-                        <option value="marketing">Phòng Marketing</option>
-                        <option value="sales">Phòng Sales</option>
-                        <option value="hr">Phòng Nhân sự</option>
-                        <option value="business">Phòng Kinh doanh</option>
-                        <option value="accounting">Phòng Kế toán</option>
-                    </select>
+                        <label for="departmentSalaryInput">Chọn phòng ban:</label>
+                        <select id="departmentSalaryInput" name="department" class="filter-input">
+                            <option value="">Chọn phòng ban</option>
+                            <option value="marketing">Phòng Marketing</option>
+                            <option value="sales">Phòng Sales</option>
+                            <option value="hr">Phòng Nhân sự</option>
+                            <option value="business">Phòng Kinh doanh</option>
+                        </select>
 
-                    <button class="search-btn" onclick="searchEmployees()">Tìm kiếm</button>
+                        <button type="button" class="search-btn" onclick="searchEmployees()">Tìm kiếm</button>
+                    </form>
                 </div>
 
                 <div id="employee-table-container" style="display: none;">
@@ -253,7 +252,7 @@
                                 <th>Lương thực nhận (VND)</th>
                             </tr>
                         </thead>
-                        <tbody id="employee-table-body1"></tbody>
+                        <tbody id="salary-table-body"></tbody>
                     </table>
                 </div>
 

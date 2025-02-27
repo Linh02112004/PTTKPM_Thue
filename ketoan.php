@@ -14,6 +14,7 @@ switch ($action) {
     // 1. Quản lý nhân viên (Xem và xóa)
     // Lấy danh sách nhân viên
     case 'get_employees':
+        header('Content-Type: application/json'); // Thêm dòng này
         $department = $_GET['department'] ?? 'all';
         
         if ($department === 'all') {
@@ -33,6 +34,7 @@ switch ($action) {
         
         echo json_encode($employees);
         break;
+    
     
     // Xóa nhân viên
     case 'delete_employee':
@@ -154,46 +156,49 @@ switch ($action) {
     }
     break;
     
-    // 4. Tính lương và thuế
-    case 'calculate_tax':
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['id'];
-            $salary = $_POST['salary'];
-            $month = $_POST['month'];
-            $year = $_POST['year'];
-            $dependent = $_POST['dependent'];
+    // Lấy danh sách nhân viên theo phòng ban, tháng, năm
+    case 'get_employees':
+        $month = $_GET['month'];
+        $year = $_GET['year'];
+        $department = $_GET['department'];
 
-            // Tính thuế theo biểu thuế lũy tiến
-            $deductionsForDependents = 4400000 * $dependent;
-            $tncn = $salary - 11000000 - $deductionsForDependents;
+        $stmt = $conn->prepare("SELECT id, full_name, dependent FROM users WHERE department = ?");
+        $stmt->bind_param("s", $department);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-            if ($tncn <= 0) {
-                $tax = 0;
-            } elseif ($tncn <= 5000000) {
-                $tax = $tncn * 0.05;
-            } elseif ($tncn <= 10000000) {
-                $tax = $tncn * 0.10 - 250000;
-            } elseif ($tncn <= 18000000) {
-                $tax = $tncn * 0.15 - 750000;
-            } elseif ($tncn <= 32000000) {
-                $tax = $tncn * 0.20 - 1650000;
-            } elseif ($tncn <= 52000000) {
-                $tax = $tncn * 0.25 - 3250000;
-            } elseif ($tncn <= 80000000) {
-                $tax = $tncn * 0.30 - 5850000;
-            } else {
-                $tax = $tncn * 0.35 - 9850000;
-            }
-
-            $stmt = $conn->prepare("INSERT INTO monthTax (id, month, year, salary, tax) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("siidd", $id, $month, $year, $salary, $tax);
-
-            if ($stmt->execute()) {
-                echo "Lưu lương và thuế thành công!";
-            } else {
-                echo "Lỗi khi lưu dữ liệu!";
-            }
+        $employees = [];
+        while ($row = $result->fetch_assoc()) {
+            $employees[] = $row;
         }
+
+        echo json_encode($employees);
+        break;
+
+    // Lấy mức giảm trừ bản thân và người phụ thuộc
+    case 'get_deductions':
+        $month = $_GET['month'];
+        $year = $_GET['year'];
+
+        $stmt = $conn->prepare("SELECT selfDeduction, dependentDeduction FROM deduction WHERE month = ? AND year = ?");
+        $stmt->bind_param("ii", $month, $year);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+
+        echo json_encode($result);
+        break;
+
+    // Lưu lương, thuế và lương thực nhận vào bảng monthTax
+    case 'save_salary_tax':
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        foreach ($data as $employee) {
+            $stmt = $conn->prepare("REPLACE INTO monthTax (id, month, year, salary, tax) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("siidd", $employee['id'], $employee['month'], $employee['year'], $employee['salary'], $employee['tax']);
+            $stmt->execute();
+        }
+
+        echo "Dữ liệu lương và thuế đã được lưu thành công!";
         break;
 
     // 5. Xem quyết toán thuế
