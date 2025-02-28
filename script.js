@@ -19,7 +19,7 @@ function closeCreateAccountForm() {
 document.getElementById('department-select').addEventListener('change', function () {
     loadEmployees(this.value);
 });
-
+// 1.Quản lý nhân viên
 function loadEmployees() {
     const department = document.getElementById('department-select').value;
     fetch(`ketoan.php?action=get_employees&department=${department}`)
@@ -41,8 +41,8 @@ function loadEmployees() {
             data.forEach(employee => {
                 tableBody.innerHTML += `
                     <tr>
-                        <td>${employee.full_name || '-'}</td>
                         <td>${employee.id || '-'}</td>
+                        <td>${employee.full_name || '-'}</td>
                         <td>${employee.dob || '-'}</td>
                         <td>${employee.address || '-'}</td>
                         <td>${employee.phone || '-'}</td>
@@ -61,7 +61,6 @@ function loadEmployees() {
             console.error('Lỗi khi tải dữ liệu nhân viên:', error);
         });
 }
-
 
 function editEmployee(id) {
     alert(`Chỉnh sửa nhân viên: ${id}`);
@@ -86,6 +85,7 @@ function deleteEmployee(id) {
 
 window.onload = () => loadEmployees('all');
 
+// 2. Quản lý tài khoản
 function loadAccounts() {
     fetch('ketoan.php?action=get_accounts')
         .then(response => response.json())
@@ -133,6 +133,7 @@ function deleteAccount(id) {
 
 window.onload = () => loadAccounts();
 
+// 3. Thiết lập giảm trừ
 function setupDeduction() {
     const month = document.getElementById('deduction-month').value;
     const year = document.getElementById('deduction-year').value;
@@ -167,83 +168,119 @@ function setupDeduction() {
             alert('Có lỗi xảy ra khi gửi dữ liệu!');
         });
 }
+// 4. Tính lương và thuế
+function loadEmployeeSalaries() {
+    const month = document.getElementById('month').value;
+    const year = document.getElementById('year').value;
+    const department = document.getElementById('department').value;
 
-function searchEmployees() {
-    const form = document.getElementById('salaryTaxForm');
-    const formData = new FormData(form);
+    if (!month || !year || !department) {
+        alert("Vui lòng chọn đầy đủ tháng, năm và phòng ban!");
+        return;
+    }
 
-    fetch('ketoan.php?action=calculate_tax', {
-        method: 'POST',
-        body: formData
-    })
-        .then(response => response.json())
+    fetch(`ketoan.php?action=get_salaries&month=${month}&year=${year}&department=${department}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Lỗi khi lấy dữ liệu từ server!');
+            }
+            return response.json();
+        })
         .then(data => {
-            const tableBody = document.getElementById('salary-table-body');
+            const tableBody = document.getElementById('salaryTableBody');
             tableBody.innerHTML = '';
-            document.getElementById('employee-table-container').style.display = 'block';
 
-            data.forEach(emp => {
+            if (data.length === 0 || data.error) {
+                tableBody.innerHTML = `<tr><td colspan="5">${data.error || 'Không có dữ liệu nhân viên!'}</td></tr>`;
+                return;
+            }
+
+            data.forEach(employee => {
                 tableBody.innerHTML += `
-                <tr>
-                    <td>${emp.full_name}</td>
-                    <td>${emp.id}</td>
-                    <td><input type="number" id="salary-${emp.id}" oninput="calculateTaxForEmployee('${emp.id}', ${emp.dependent})" placeholder="Nhập lương" /></td>
-                    <td id="tax-${emp.id}">0</td>
-                    <td id="netSalary-${emp.id}">0</td>
-                </tr>`;
+                    <tr>
+                        <td>${employee.id}</td>
+                        <td>${employee.full_name}</td>
+                        <td>
+                            <input type="number" id="salary-${employee.id}" placeholder="Nhập lương" 
+                                oninput="calculateTax('${employee.id}', ${employee.selfDeduction}, ${employee.dependentDeduction}, ${employee.dependent})">
+                        </td>
+                        <td id="tax-${employee.id}">0</td>
+                        <td id="netSalary-${employee.id}">0</td>
+                    </tr>`;
             });
+        })
+        .catch(error => {
+            console.error('Lỗi khi tải danh sách nhân viên:', error);
         });
 }
 
-function calculateTaxForEmployee(employeeId, dependent) {
+
+function calculateTax(employeeId, selfDeduction, dependentDeduction, dependent) {
     const salaryInput = document.getElementById(`salary-${employeeId}`);
     const salary = parseFloat(salaryInput.value) || 0;
 
-    fetch('get_deduction.php')
-        .then(response => response.json())
-        .then(deductions => {
-            const selfDeduction = deductions.selfDeduction;
-            const dependentDeduction = deductions.dependentDeduction;
+    const deductionsForDependents = dependentDeduction * dependent;
+    const tncn = salary - selfDeduction - deductionsForDependents;
 
-            const deductionsForDependents = dependentDeduction * dependent;
-            const tncn = salary - selfDeduction - deductionsForDependents;
-            let taxAmount = 0;
+    let taxAmount = 0;
 
-            if (tncn > 0) {
-                if (tncn <= 5000000) taxAmount = tncn * 0.05;
-                else if (tncn <= 10000000) taxAmount = tncn * 0.10 - 250000;
-                else if (tncn <= 18000000) taxAmount = tncn * 0.15 - 750000;
-                else if (tncn <= 32000000) taxAmount = tncn * 0.20 - 1650000;
-                else if (tncn <= 52000000) taxAmount = tncn * 0.25 - 3250000;
-                else if (tncn <= 80000000) taxAmount = tncn * 0.30 - 5850000;
-                else taxAmount = tncn * 0.35 - 9850000;
-            }
+    if (tncn > 0) {
+        if (tncn <= 5000000) taxAmount = tncn * 0.05;
+        else if (tncn <= 10000000) taxAmount = tncn * 0.10 - 250000;
+        else if (tncn <= 18000000) taxAmount = tncn * 0.15 - 750000;
+        else if (tncn <= 32000000) taxAmount = tncn * 0.20 - 1650000;
+        else if (tncn <= 52000000) taxAmount = tncn * 0.25 - 3250000;
+        else if (tncn <= 80000000) taxAmount = tncn * 0.30 - 5850000;
+        else taxAmount = tncn * 0.35 - 9850000;
+    }
 
-            const netSalary = salary - taxAmount;
-            document.getElementById(`tax-${employeeId}`).innerText = taxAmount.toFixed(2);
-            document.getElementById(`netSalary-${employeeId}`).innerText = netSalary.toFixed(2);
-        });
+    const netSalary = salary - taxAmount;
+
+    document.getElementById(`tax-${employeeId}`).innerText = taxAmount.toFixed(2);
+    document.getElementById(`netSalary-${employeeId}`).innerText = netSalary.toFixed(2);
 }
 
-function saveSalaryTax() {
-    const rows = document.querySelectorAll('#salary-table-body tr');
-    const month = document.getElementById('monthInput').value;
-    const year = document.getElementById('yearInputs').value;
-    const data = [];
+function saveSalaries() {
+    const rows = document.querySelectorAll('#salaryTableBody tr');
+    const salaryData = [];
+    const month = document.getElementById('month').value;
+    const year = document.getElementById('year').value;
+
+    if (!month || !year) {
+        alert("Vui lòng chọn tháng và năm!");
+        return;
+    }
 
     rows.forEach(row => {
-        const id = row.cells[1].innerText;
-        const salary = parseFloat(row.querySelector(`input[id^=salary-]`).value) || 0;
-        const tax = parseFloat(row.cells[3].innerText) || 0;
-        data.push({ id, month, year, salary, tax });
+        const id = row.cells[0].innerText;
+        const salary = parseFloat(document.getElementById(`salary-${id}`).value) || 0;
+        const tax = parseFloat(document.getElementById(`tax-${id}`).innerText) || 0;
+        const netSalary = parseFloat(document.getElementById(`netSalary-${id}`).innerText) || 0;
+
+        if (salary > 0) {
+            salaryData.push({ id, month, year, salary, tax, netSalary });
+        }
     });
 
-    fetch('ketoan.php?action=save_tax', {
-        method: 'POST',
-        body: JSON.stringify(data)
-    })
-        .then(response => response.json())
-        .then(result => alert(result.message));
-}
+    if (salaryData.length === 0) {
+        alert("Không có dữ liệu để lưu hoặc lương chưa được nhập!");
+        return;
+    }
 
-<button onclick="saveSalaryTax()">Lưu dữ liệu</button>
+    fetch('ketoan.php?action=save_salaries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ salaries: salaryData })
+    })
+        .then(response => {
+            if (!response.ok) throw new Error('Lỗi khi gửi dữ liệu đến máy chủ!');
+            return response.json();
+        })
+        .then(result => {
+            alert(result.message || 'Dữ liệu đã được lưu thành công!');
+        })
+        .catch(error => {
+            console.error('Lỗi khi lưu lương:', error);
+            alert('Có lỗi xảy ra khi lưu dữ liệu!');
+        });
+}

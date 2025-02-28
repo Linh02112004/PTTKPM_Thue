@@ -57,8 +57,8 @@
                     <table border="1">
                         <thead>
                             <tr>
-                                <th>Họ tên</th>
                                 <th>MSNV</th>
+                                <th>Họ tên</th>
                                 <th>Ngày sinh</th>
                                 <th>Địa chỉ</th>
                                 <th>SDT</th>
@@ -204,60 +204,57 @@
             <div id="tab-tax-calculation" class="tab-content" style="display: none;">
                 <h2>Lương và Thuế</h2>
                 <div class="filter-section">
-                    <form id="salaryTaxForm" method="POST" action="ketoan.php?action=calculate_tax">
-                        <label for="monthInput">Chọn tháng:</label>
-                        <select id="monthInput" name="month" class="filter-input" required>
-                            <option value="">Chọn tháng</option>
-                            <option value="01">Tháng 1</option>
-                            <option value="02">Tháng 2</option>
-                            <option value="03">Tháng 3</option>
-                            <option value="04">Tháng 4</option>
-                            <option value="05">Tháng 5</option>
-                            <option value="06">Tháng 6</option>
-                            <option value="07">Tháng 7</option>
-                            <option value="08">Tháng 8</option>
-                            <option value="09">Tháng 9</option>
+                    <form id="filterForm" method="post">
+                        <label for="month">Chọn tháng:</label>
+                        <select id="month" name="month">
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
                             <option value="10">Tháng 10</option>
                             <option value="11">Tháng 11</option>
                             <option value="12">Tháng 12</option>
                         </select>
 
-                        <label for="yearInputs">Nhập năm:</label>
-                        <input type="number" id="yearInputs" name="year" class="filter-input" placeholder="Nhập năm"
-                            min="2000" max="2100" required />
+                        <label for="year">Chọn năm:</label>
+                        <input type="number" id="year" name="year" min="2000" max="2100" required>
 
-                        <label for="departmentSalaryInput">Chọn phòng ban:</label>
-                        <select id="departmentSalaryInput" name="department" class="filter-input">
-                            <option value="">Chọn phòng ban</option>
-                            <option value="marketing">Phòng Marketing</option>
-                            <option value="sales">Phòng Sales</option>
-                            <option value="hr">Phòng Nhân sự</option>
-                            <option value="business">Phòng Kinh doanh</option>
+                        <label for="department">Chọn phòng ban:</label>
+                        <select id="department" name="department">
+                            <option value="all">Tất cả</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="sales">Sales</option>
+                            <option value="nhân sự">Nhân sự</option>
+                            <option value="kinh doanh">Kinh doanh</option>
                         </select>
 
-                        <button type="button" class="search-btn" onclick="searchEmployees()">Tìm kiếm</button>
+                        <button type="button" onclick="loadEmployeeSalaries()">Tải danh sách</button>
                     </form>
-                </div>
 
-                <div id="employee-table-container" style="display: none;">
-                    <h3>Danh sách nhân viên</h3>
-                    <table>
+                    <h2>Danh sách nhân viên</h2>
+                    <table id="employeeTable" border="1">
                         <thead>
                             <tr>
-                                <th>Họ và tên</th>
                                 <th>MSNV</th>
-                                <th>MS thuế</th>
-                                <th>Lương (VND)</th>
-                                <th>Thuế (VND)</th>
-                                <th>Lương thực nhận (VND)</th>
+                                <th>Họ tên</th>
+                                <th>Lương</th>
+                                <th>Thuế</th>
+                                <th>Lương thực nhận</th>
                             </tr>
                         </thead>
-                        <tbody id="salary-table-body"></tbody>
+                        <tbody id="salaryTableBody">
+                            <!-- Dữ liệu sẽ được thêm từ JS -->
+                        </tbody>
                     </table>
                 </div>
 
-                <button class="search-btn" onclick="saveSalaries()" style="display: none;"
-                    id="save-salary-btn">Lưu</button>
+                <button class="search-btn" onclick="saveSalaries()" id="save-salary-btn"
+                    style="display: block;">Lưu</button>
             </div>
 
             <!-- Tab: Xem quyết toán thuế -->

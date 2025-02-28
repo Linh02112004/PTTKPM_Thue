@@ -14,7 +14,7 @@ switch ($action) {
     // 1. Quản lý nhân viên (Xem và xóa)
     // Lấy danh sách nhân viên
     case 'get_employees':
-        header('Content-Type: application/json'); // Thêm dòng này
+        header('Content-Type: application/json'); 
         $department = $_GET['department'] ?? 'all';
         
         if ($department === 'all') {
@@ -34,7 +34,6 @@ switch ($action) {
         
         echo json_encode($employees);
         break;
-    
     
     // Xóa nhân viên
     case 'delete_employee':
@@ -155,52 +154,85 @@ switch ($action) {
         $stmt->close();
     }
     break;
+    // 4. Tính lương và thuế
+    case 'get_salaries':
+        header('Content-Type: application/json');
     
-    // Lấy danh sách nhân viên theo phòng ban, tháng, năm
-    case 'get_employees':
-        $month = $_GET['month'];
-        $year = $_GET['year'];
-        $department = $_GET['department'];
-
-        $stmt = $conn->prepare("SELECT id, full_name, dependent FROM users WHERE department = ?");
-        $stmt->bind_param("s", $department);
+        $month = $_GET['month'] ?? null;
+        $year = $_GET['year'] ?? null;
+        $department = $_GET['department'] ?? 'all';
+    
+        if (!$month || !$year || !$department) {
+            echo json_encode(['error' => 'Thiếu thông tin tháng, năm hoặc phòng ban!']);
+            exit;
+        }
+    
+        // Lấy mức giảm trừ
+        $stmtDeduction = $conn->prepare("SELECT selfDeduction, dependentDeduction FROM deduction WHERE month = ? AND year = ? LIMIT 1");
+        $stmtDeduction->bind_param("ii", $month, $year);
+        $stmtDeduction->execute();
+        $deductionResult = $stmtDeduction->get_result();
+        $deduction = $deductionResult->fetch_assoc();
+    
+        if (!$deduction) {
+            echo json_encode(['error' => 'Chưa thiết lập mức giảm trừ cho tháng và năm này']);
+            exit;
+        }
+    
+        $selfDeduction = $deduction['selfDeduction'];
+        $dependentDeduction = $deduction['dependentDeduction'];
+    
+        // Lấy danh sách nhân viên
+        if ($department === 'all') {
+            $stmt = $conn->prepare("SELECT id, full_name, dependent FROM users");
+        } else {
+            $stmt = $conn->prepare("SELECT id, full_name, dependent FROM users WHERE department = ?");
+            $stmt->bind_param("s", $department);
+        }
+    
         $stmt->execute();
         $result = $stmt->get_result();
-
         $employees = [];
+    
         while ($row = $result->fetch_assoc()) {
-            $employees[] = $row;
+            $employees[] = [
+                'id' => $row['id'],
+                'full_name' => $row['full_name'],
+                'dependent' => $row['dependent'] ?? 0,
+                'selfDeduction' => $selfDeduction,
+                'dependentDeduction' => $dependentDeduction
+            ];
         }
-
+    
         echo json_encode($employees);
         break;
 
-    // Lấy mức giảm trừ bản thân và người phụ thuộc
-    case 'get_deductions':
-        $month = $_GET['month'];
-        $year = $_GET['year'];
-
-        $stmt = $conn->prepare("SELECT selfDeduction, dependentDeduction FROM deduction WHERE month = ? AND year = ?");
-        $stmt->bind_param("ii", $month, $year);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
-
-        echo json_encode($result);
-        break;
-
-    // Lưu lương, thuế và lương thực nhận vào bảng monthTax
-    case 'save_salary_tax':
+    case 'save_salaries':
+        header('Content-Type: application/json');
         $data = json_decode(file_get_contents('php://input'), true);
-
-        foreach ($data as $employee) {
-            $stmt = $conn->prepare("REPLACE INTO monthTax (id, month, year, salary, tax) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("siidd", $employee['id'], $employee['month'], $employee['year'], $employee['salary'], $employee['tax']);
+        
+        if (!isset($data['salaries']) || empty($data['salaries'])) {
+            echo json_encode(['error' => 'Không có dữ liệu để lưu!']);
+            exit;
+        }
+        
+        $stmt = $conn->prepare("REPLACE INTO monthTax (id, month, year, salary, tax, netSalary) VALUES (?, ?, ?, ?, ?, ?)");
+        
+        foreach ($data['salaries'] as $employee) {
+            $id = $employee['id'];
+            $month = $employee['month'];
+            $year = $employee['year'];
+            $salary = $employee['salary'];
+            $tax = $employee['tax'];
+            $netSalary = $employee['netSalary'];
+        
+            $stmt->bind_param("siiddd", $id, $month, $year, $salary, $tax, $netSalary);
             $stmt->execute();
         }
-
-        echo "Dữ liệu lương và thuế đã được lưu thành công!";
-        break;
-
+        
+        echo json_encode(['message' => 'Dữ liệu lương đã được lưu thành công!']);
+        break;    
+    
     // 5. Xem quyết toán thuế
     case 'view_tax_summary':
         if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['department']) && isset($_GET['year'])) {

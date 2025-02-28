@@ -38,8 +38,8 @@ CREATE TABLE deduction (
 
 CREATE TABLE monthTax (
     id CHAR(10), 
-    month TINYINT NOT NULL, -- Tháng sẽ giới hạn từ 1-12 bằng ứng dụng
-    year YEAR NOT NULL, -- Dùng kiểu dữ liệu YEAR thay vì INT
+    month TINYINT NOT NULL, 
+    year YEAR NOT NULL, 
     salary DECIMAL(15,2) NOT NULL,
     tax DECIMAL(15,2) NOT NULL,
     netSalary DECIMAL(15,2) NOT NULL,
