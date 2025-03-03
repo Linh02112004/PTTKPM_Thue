@@ -19,7 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        $_SESSION['user'] = $user;
+        
+        // Lưu thông tin vào session
+        $_SESSION['user'] = [
+            'id' => $user['id'],
+            'full_name' => $user['full_name'],
+            'user_type' => $_POST['user-type']
+        ];
 
         // Lấy danh sách vai trò của người dùng từ bảng user_roles
         $stmt_roles = $conn->prepare("SELECT user_type FROM user_roles WHERE id = ? AND user_type = ?");
@@ -36,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } elseif ($selectedRole === 'truong-phong') {
                 echo "<script>window.location.href = 'truongphong.html';</script>";
             } elseif ($selectedRole === 'nhan-vien') {
-                echo "<script>window.location.href = 'nhanvien.html';</script>";
+                echo "<script>window.location.href = 'nhanvien.php';</script>";
             }
             exit;
         } else {

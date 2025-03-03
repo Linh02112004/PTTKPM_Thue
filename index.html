@@ -12,11 +12,11 @@
 
 <body>
     <header>
+        <div class="welcome-message" id="welcome-message">PHẦN MỀM TÍNH THUẾ THU NHẬP CÁ NHÂN</div>
         <a href="#" onclick="showLogin()" class="register-button">Đăng Nhập</a>
     </header>
     <main>
-        <div class="welcome-message" id="welcome-message">Chào mừng bạn đến với phần mềm tính thuế thu nhập cá nhân
-        </div>
+        <div class="background"></div>
 
         <!-- Form Đăng Nhập -->
         <div class="form-container" id="login-form" style="display: none;">
@@ -57,7 +57,7 @@
 
         function showLogin() {
             document.getElementById('login-form').style.display = 'block';
-            document.getElementById('welcome-message').style.display = 'none';
+            document.getElementById('welcome-message').style.display = 'block';
         }
     </script>
 </body>

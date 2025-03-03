@@ -29,6 +29,10 @@
             <button class="btn" onclick="switchTab('tab-deduction-setup')">Thiết lập giảm trừ</button>
             <button class="btn" onclick="switchTab('tab-tax-calculation')">Lương và Thuế</button>
             <button class="btn" onclick="switchTab('tab-tax-summary')">Xem quyết toán thuế</button>
+            <form id="logoutForm" action="logout.php" method="post">
+                <button class="btn" type="submit">Đăng xuất</button>
+            </form>
+
         </div>
 
         <!-- Main Content -->
@@ -42,7 +46,7 @@
                 <div class="filter-section">
                     <form id="employee-form">
                         <label for="department-select">Chọn phòng ban:</label>
-                        <select id="department-select" name="department">
+                        <select id="department-select" name="department" onchange="loadEmployees()">
                             <option value="all">Tất cả</option>
                             <option value="marketing">Phòng Marketing</option>
                             <option value="sales">Phòng Sales</option>
@@ -53,6 +57,7 @@
                 </div>
 
                 <!-- Bảng hiển thị nhân viên -->
+                <h2>Danh sách nhân viên</h2>
                 <div class="table-container">
                     <table border="1">
                         <thead>
@@ -136,13 +141,13 @@
                 </div>
 
                 <!-- Danh sách tài khoản -->
-                <h3>Danh sách tài khoản</h3>
+                <h2>Danh sách tài khoản</h2>
                 <div class="table-container">
                     <table border="1">
                         <thead>
                             <tr>
+                                <th>MSNV</th>
                                 <th>Họ và tên</th>
-                                <th>Mã số</th>
                                 <th>Phòng ban</th>
                                 <th>Chức vụ</th>
                                 <th>CCCD</th>
@@ -160,41 +165,31 @@
                 <h2>Thiết lập giảm trừ</h2>
                 <form id="deduction-form">
                     <div class="filter-section">
-                        <label for="deduction-month">Chọn tháng:</label>
-                        <select class="filter-input" id="deduction-month" name="month">
-                            <option value="">Chọn tháng</option>
-                            <option value="1">Tháng 1</option>
-                            <option value="2">Tháng 2</option>
-                            <option value="3">Tháng 3</option>
-                            <option value="4">Tháng 4</option>
-                            <option value="5">Tháng 5</option>
-                            <option value="6">Tháng 6</option>
-                            <option value="7">Tháng 7</option>
-                            <option value="8">Tháng 8</option>
-                            <option value="9">Tháng 9</option>
-                            <option value="10">Tháng 10</option>
-                            <option value="11">Tháng 11</option>
-                            <option value="12">Tháng 12</option>
-                        </select>
-
+                        <!-- Nhập năm và nút tìm -->
                         <label for="deduction-year">Nhập năm:</label>
-                        <input type="number" id="deduction-year" name="year" class="filter-input" placeholder="Nhập năm"
+                        <input type="number" id="deduction-year" name="year" class="filter-input" placeholder="VD: 2024"
                             min="2000" max="2100">
+                        <button type="button" class="search-btn" onclick="fetchDeductions()">Tìm</button>
 
-                        <h3>Mức giảm trừ thu nhập</h3>
-                        <div class="deduction-box">
-                            <label for="self-deduction">Giảm trừ bản thân (VND):</label>
-                            <input type="number" id="self-deduction" name="selfDeduction" class="filter-input"
-                                placeholder="Nhập mức giảm trừ" min="0">
+                        <!-- Bảng hiển thị giảm trừ -->
+                        <h2>Bảng Thiết lập giảm trừ</h2>
+                        <table id="deductionTable" border="1">
+                            <thead>
+                                <tr>
+                                    <th>Tháng</th>
+                                    <th>Năm</th>
+                                    <th>Giảm trừ bản thân (VND)</th>
+                                    <th>Giảm trừ người phụ thuộc (VND)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="annualTaxTableBody">
+                                <!-- Dữ liệu sẽ được thêm từ JavaScript -->
+                            </tbody>
+                        </table>
 
-                            <label for="dependent-deduction">Giảm trừ người phụ thuộc (VND):</label>
-                            <input type="number" id="dependent-deduction" name="dependentDeduction" class="filter-input"
-                                placeholder="Nhập mức giảm trừ" min="0">
-                        </div>
-
+                        <!-- Nút Thiết lập -->
                         <div>
-                            <button type="button" class="search-btn" id="setup-deduction-btn"
-                                onclick="setupDeduction()">Thiết lập</button>
+                            <button type="button" class="search-btn" onclick="setupAllDeductions()">Thiết lập</button>
                         </div>
                     </div>
                 </form>
@@ -204,7 +199,9 @@
             <div id="tab-tax-calculation" class="tab-content" style="display: none;">
                 <h2>Lương và Thuế</h2>
                 <div class="filter-section">
-                    <form id="filterForm" method="post">
+                    <form id="filterForm" method="get" action="ketoan.php?action=get_salaries">
+                        <input type="hidden" name="action" value="get_salaries">
+
                         <label for="month">Chọn tháng:</label>
                         <select id="month" name="month">
                             <option value="1">Tháng 1</option>
@@ -221,8 +218,9 @@
                             <option value="12">Tháng 12</option>
                         </select>
 
-                        <label for="year">Chọn năm:</label>
-                        <input type="number" id="year" name="year" min="2000" max="2100" required>
+                        <label for="year">Nhập năm:</label>
+                        <input type="number" id="year" name="year" placeholder="VD: 2024" min="2000" max="2100"
+                            required>
 
                         <label for="department">Chọn phòng ban:</label>
                         <select id="department" name="department">
@@ -233,22 +231,22 @@
                             <option value="kinh doanh">Kinh doanh</option>
                         </select>
 
-                        <button type="button" onclick="loadEmployeeSalaries()">Tải danh sách</button>
+                        <button class="search-btn" onclick="loadSalaries()">Tải danh sách</button>
                     </form>
 
-                    <h2>Danh sách nhân viên</h2>
+                    <h2>Bảng lương cho nhân viên</h2>
                     <table id="employeeTable" border="1">
                         <thead>
                             <tr>
                                 <th>MSNV</th>
                                 <th>Họ tên</th>
-                                <th>Lương</th>
-                                <th>Thuế</th>
-                                <th>Lương thực nhận</th>
+                                <th>Lương (VND)</th>
+                                <th>Thuế (VND)</th>
+                                <th>Lương thực nhận (VND)</th>
                             </tr>
                         </thead>
                         <tbody id="salaryTableBody">
-                            <!-- Dữ liệu sẽ được thêm từ JS -->
+                            <!-- Dữ liệu sẽ được PHP đổ vào đây -->
                         </tbody>
                     </table>
                 </div>
@@ -261,55 +259,54 @@
             <div id="tab-tax-summary" class="tab-content" style="display: none;">
                 <h2>Xem quyết toán thuế</h2>
                 <div class="filter-section">
-                    <label for="departmentInput">Chọn phòng ban:</label>
-                    <select class="filter-input" id="departmentInput">
-                        <option value="">Chọn phòng ban</option>
-                        <option value="marketing">Phòng Marketing</option>
-                        <option value="business">Phòng Kinh doanh</option>
-                        <option value="sales">Phòng Sales</option>
-                        <option value="hr">Phòng Nhân sự</option>
-                        <option value="accounting">Phòng Kế toán</option>
-                    </select>
+                    <form id="annualTaxForm" onsubmit="loadAnnualTax(event)">
+                        <label for="year">Nhập năm:</label>
+                        <input type="number" id="year" name="year" min="2000" max="2100" required>
 
-                    <input type="number" id="yearInput" class="filter-input" placeholder="Nhập năm (VD: 2024)"
-                        min="2000" max="2100">
+                        <label for="department">Chọn phòng ban:</label>
+                        <select id="department" name="department">
+                            <option value="all">Tất cả</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="sales">Sales</option>
+                            <option value="nhân sự">Nhân sự</option>
+                            <option value="kinh doanh">Kinh doanh</option>
+                        </select>
 
-                    <button class="search-btn" onclick="search()">Tìm kiếm</button>
+                        <button type="submit" class="search-btn">Xem quyết toán thuế</button>
+                    </form>
                 </div>
 
-                <div id="table-container" class="table-container" style="display: none;">
-                    <h3>Kết quả quyết toán</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Họ tên</th>
-                                <th>MSNV</th>
-                                <th>MS thuế</th>
-                                <th>Lương (VND)</th>
-                                <th>Thuế (VND)</th>
-                                <th>Lương thực nhận (VND)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body">
-                            <!-- Nội dung sẽ được hiển thị sau khi nhấn "Tìm kiếm" -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <footer id="footer" style="display: none;">
-                    <p id="total-salary">Tổng lương: 0 VND</p>
-                    <p id="total-tax">Tổng thuế: 0 VND</p>
-                    <p id="total-net-salary">Tổng lương thực nhận: 0 VND</p>
-                    <button class="export" onclick="exportReport()">Xuất báo cáo</button>
-                </footer>
+                <!-- Bảng quyết toán thuế -->
+                <h2>Bảng quyết toán thuế năm</h2>
+                <table id="annualTaxTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>MSNV</th>
+                            <th>Họ tên</th>
+                            <th>Tổng lương (VND)</th>
+                            <th>Tổng thuế (VND)</th>
+                            <th>Lương thực nhận (VND)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="annualTaxTableBody">
+                        <!-- Dữ liệu sẽ được thêm từ PHP -->
+                    </tbody>
+                </table>
             </div>
 
+            <footer id="footer" style="display: none;">
+                <p id="total-salary">Tổng lương: 0 VND</p>
+                <p id="total-tax">Tổng thuế: 0 VND</p>
+                <p id="total-net-salary">Tổng lương thực nhận: 0 VND</p>
+                <button class="export" onclick="exportReport()">Xuất báo cáo</button>
+            </footer>
         </div>
+
+    </div>
     </div>
 
     <!-- Script -->
-    <script src="script.js"></script>
+    <script src="./script.js"></script>
 
 </body>
 

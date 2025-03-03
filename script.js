@@ -1,7 +1,24 @@
 function switchTab(tabId) {
     const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => tab.style.display = 'none');
-    document.getElementById(tabId).style.display = 'block';
+    tabs.forEach(tab => tab.style.display = 'none'); // Ẩn tất cả các tab
+
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) activeTab.style.display = 'block'; // Hiển thị tab được chọn
+
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => btn.classList.remove('active')); // Xóa "active" khỏi tất cả nút
+    document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+}
+
+// Xử lý ảnh
+function loadPhoto(event) {
+    const profilePic = document.getElementById('profile-pic');
+    profilePic.style.backgroundImage = `url(${URL.createObjectURL(event.target.files[0])})`;
+}
+
+function openPhotoInput() {
+    const photoInput = document.getElementById('photo-input');
+    photoInput.click();
 }
 
 function confirmDelete() {
@@ -19,6 +36,7 @@ function closeCreateAccountForm() {
 document.getElementById('department-select').addEventListener('change', function () {
     loadEmployees(this.value);
 });
+
 // 1.Quản lý nhân viên
 function loadEmployees() {
     const department = document.getElementById('department-select').value;
@@ -52,7 +70,13 @@ function loadEmployees() {
                             <img src="${employee.avatar || '#'}" alt="Ảnh" style="width: 50px; height: 50px;">
                         </td>
                         <td>
-                            <button onclick="deleteEmployee('${employee.id}')">Xóa</button>
+                            <button onclick="editEmployee('${employee.id}')" style="background: none; border: none; cursor: pointer; margin-right: 10px;">
+                                <i class="fas fa-edit" style="color: #007bff;"></i>
+                            </button>
+
+                            <button onclick="deleteEmployee('${employee.id}')" style="background: none; border: none; cursor: pointer;">
+                                <i class="fas fa-trash-alt" style="color: red;"></i>
+                            </button>
                         </td>
                     </tr>`;
             });
@@ -61,6 +85,11 @@ function loadEmployees() {
             console.error('Lỗi khi tải dữ liệu nhân viên:', error);
         });
 }
+
+// Gọi loadEmployees() khi trang load
+window.onload = function () {
+    loadEmployees();
+};
 
 function editEmployee(id) {
     alert(`Chỉnh sửa nhân viên: ${id}`);
@@ -84,6 +113,10 @@ function deleteEmployee(id) {
 }
 
 window.onload = () => loadEmployees('all');
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadAccounts();
+});
 
 // 2. Quản lý tài khoản
 function loadAccounts() {
@@ -131,89 +164,102 @@ function deleteAccount(id) {
     }
 }
 
-window.onload = () => loadAccounts();
-
 // 3. Thiết lập giảm trừ
-function setupDeduction() {
-    const month = document.getElementById('deduction-month').value;
+// Lấy dữ liệu giảm trừ theo năm
+function fetchDeductions() {
     const year = document.getElementById('deduction-year').value;
-    const selfDeduction = document.getElementById('self-deduction').value;
-    const dependentDeduction = document.getElementById('dependent-deduction').value;
 
-    // Kiểm tra dữ liệu
-    if (!month || !year || !selfDeduction || !dependentDeduction) {
-        alert('Vui lòng nhập đầy đủ thông tin!');
+    if (!year) {
+        alert("Vui lòng nhập năm!");
         return;
     }
 
-    // Gửi dữ liệu bằng Fetch API
-    fetch('ketoan.php?action=setup_deduction', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            month,
-            year,
-            selfDeduction,
-            dependentDeduction,
-        })
-    })
-        .then(response => response.text())
+    fetch(`ketoan.php?action=get_deductions&year=${year}`)
+        .then(response => response.json())
         .then(data => {
-            alert(data); // Hiển thị kết quả trả về từ PHP
+            renderDeductionTable(year, data);
         })
         .catch(error => {
             console.error('Lỗi:', error);
-            alert('Có lỗi xảy ra khi gửi dữ liệu!');
+            alert("Có lỗi xảy ra khi tải dữ liệu!");
         });
 }
+
+// Hiển thị bảng 12 tháng và dữ liệu đã lưu
+function renderDeductionTable(year, data) {
+    const tbody = document.getElementById('annualTaxTableBody');
+    tbody.innerHTML = "";
+
+    for (let month = 1; month <= 12; month++) {
+        const row = document.createElement('tr');
+
+        const deduction = data.find(item => item.month == month) || { selfDeduction: '', dependentDeduction: '' };
+
+        row.innerHTML = `
+            <td>${month}</td>
+            <td>${year}</td>
+            <td><input type="number" class="deduction-input" id="self-${month}" value="${deduction.selfDeduction}" min="0"></td>
+            <td><input type="number" class="deduction-input" id="dependent-${month}" value="${deduction.dependentDeduction}" min="0"></td>
+        `;
+
+        tbody.appendChild(row);
+    }
+}
+
+// Gửi dữ liệu giảm trừ đã thiết lập
+function setupAllDeductions() {
+    const year = document.getElementById('deduction-year').value;
+    if (!year) {
+        alert("Vui lòng nhập năm!");
+        return;
+    }
+
+    const deductions = [];
+    for (let month = 1; month <= 12; month++) {
+        const selfDeduction = document.getElementById(`self-${month}`).value || 0;
+        const dependentDeduction = document.getElementById(`dependent-${month}`).value || 0;
+
+        deductions.push({ month, year, selfDeduction, dependentDeduction });
+    }
+
+    // Gửi dữ liệu đến PHP
+    fetch('ketoan.php?action=setup_all_deductions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(deductions)
+    })
+        .then(response => response.text())
+        .then(data => {
+            alert(data);
+        })
+        .catch(error => {
+            console.error('Lỗi:', error);
+            alert('Có lỗi xảy ra khi thiết lập dữ liệu!');
+        });
+}
+
 // 4. Tính lương và thuế
-function loadEmployeeSalaries() {
+function loadSalaries() {
+    if (event) event.preventDefault();
+
+    // Lấy giá trị từ form
     const month = document.getElementById('month').value;
     const year = document.getElementById('year').value;
     const department = document.getElementById('department').value;
 
-    if (!month || !year || !department) {
-        alert("Vui lòng chọn đầy đủ tháng, năm và phòng ban!");
-        return;
-    }
-
+    // Gọi AJAX để lấy dữ liệu từ PHP
     fetch(`ketoan.php?action=get_salaries&month=${month}&year=${year}&department=${department}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Lỗi khi lấy dữ liệu từ server!');
-            }
-            return response.json();
-        })
+        .then(response => response.text())
         .then(data => {
-            const tableBody = document.getElementById('salaryTableBody');
-            tableBody.innerHTML = '';
-
-            if (data.length === 0 || data.error) {
-                tableBody.innerHTML = `<tr><td colspan="5">${data.error || 'Không có dữ liệu nhân viên!'}</td></tr>`;
-                return;
-            }
-
-            data.forEach(employee => {
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>${employee.id}</td>
-                        <td>${employee.full_name}</td>
-                        <td>
-                            <input type="number" id="salary-${employee.id}" placeholder="Nhập lương" 
-                                oninput="calculateTax('${employee.id}', ${employee.selfDeduction}, ${employee.dependentDeduction}, ${employee.dependent})">
-                        </td>
-                        <td id="tax-${employee.id}">0</td>
-                        <td id="netSalary-${employee.id}">0</td>
-                    </tr>`;
-            });
+            // Kiểm tra nếu có dữ liệu thì đổ vào bảng
+            const tableBody = document.getElementById("salaryTableBody");
+            tableBody.innerHTML = data || "<tr><td colspan='5'>Không có dữ liệu nhân viên!</td></tr>";
         })
         .catch(error => {
-            console.error('Lỗi khi tải danh sách nhân viên:', error);
+            console.error('Lỗi khi tải dữ liệu:', error);
+            document.getElementById("salaryTableBody").innerHTML = "<tr><td colspan='5'>Lỗi tải dữ liệu!</td></tr>";
         });
 }
-
 
 function calculateTax(employeeId, selfDeduction, dependentDeduction, dependent) {
     const salaryInput = document.getElementById(`salary-${employeeId}`);
@@ -278,9 +324,101 @@ function saveSalaries() {
         })
         .then(result => {
             alert(result.message || 'Dữ liệu đã được lưu thành công!');
+            loadEmployeeSalaries(); // Load lại bảng ngay sau khi lưu
         })
         .catch(error => {
             console.error('Lỗi khi lưu lương:', error);
             alert('Có lỗi xảy ra khi lưu dữ liệu!');
         });
+}
+
+// 5. Quyết toán thuế
+function loadAnnualTax(event) {
+    if (event) event.preventDefault();
+
+    const year = document.getElementById('year').value;
+    const department = document.getElementById('department').value;
+    const currentYear = new Date().getFullYear();
+
+    if (year >= currentYear) {
+        alert(`Chưa hết năm để xem quyết toán thuế!\nChỉ có thể xem năm <= ${currentYear - 1}.`);
+        return;
+    }
+
+
+    fetch(`ketoan.php?action=get_annual_tax&year=${year}&department=${department}`)
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById("annualTaxTableBody");
+            tableBody.innerHTML = "";
+
+            if (data.error) {
+                tableBody.innerHTML = `<tr><td colspan='5'>${data.error}</td></tr>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='5'>Không có dữ liệu quyết toán thuế!</td></tr>";
+                return;
+            }
+
+            data.forEach(employee => {
+                const totalSalary = parseFloat(employee.totalSalary) || 0;
+                const selfDeduction = parseFloat(employee.selfDeduction) * 12;
+                const dependentDeduction = parseFloat(employee.dependentDeduction) * 12;
+                const dependent = employee.dependent || 0;
+
+                // Tính thuế và lương thực nhận
+                const tax = calculateAnnualTax(totalSalary, selfDeduction, dependentDeduction, dependent);
+                const netSalary = totalSalary - tax;
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${employee.id}</td>
+                        <td>${employee.full_name}</td>
+                        <td>${totalSalary.toLocaleString()} VND</td>
+                        <td>${tax.toLocaleString()} VND</td>
+                        <td>${netSalary.toLocaleString()} VND</td>
+                    </tr>`;
+            });
+        })
+        .catch(error => {
+            console.error('Lỗi khi tải dữ liệu:', error);
+            document.getElementById("annualTaxTableBody").innerHTML = "<tr><td colspan='5'>Lỗi tải dữ liệu!</td></tr>";
+        });
+}
+
+function calculateAnnualTax(totalSalary, selfDeduction, dependentDeduction, dependent) {
+    const taxableIncome = totalSalary - selfDeduction - (dependentDeduction * dependent);
+
+    if (taxableIncome <= 60000000) return taxableIncome * 0.05;
+    else if (taxableIncome <= 120000000) return 60000000 * 0.05 + (taxableIncome - 60000000) * 0.10;
+    else if (taxableIncome <= 216000000) return 60000000 * 0.05 + 60000000 * 0.10 + (taxableIncome - 120000000) * 0.15;
+    else if (taxableIncome <= 384000000) return 60000000 * 0.05 + 60000000 * 0.10 + 96000000 * 0.15 + (taxableIncome - 216000000) * 0.20;
+    else if (taxableIncome <= 624000000) return 60000000 * 0.05 + 60000000 * 0.10 + 96000000 * 0.15 + 168000000 * 0.20 + (taxableIncome - 384000000) * 0.25;
+    else if (taxableIncome <= 960000000) return 60000000 * 0.05 + 60000000 * 0.10 + 96000000 * 0.15 + 168000000 * 0.20 + 240000000 * 0.25 + (taxableIncome - 624000000) * 0.30;
+    else return 60000000 * 0.05 + 60000000 * 0.10 + 96000000 * 0.15 + 168000000 * 0.20 + 240000000 * 0.25 + 336000000 * 0.30 + (taxableIncome - 960000000) * 0.35;
+}
+
+function saveAnnualTax() {
+    const rows = document.querySelectorAll('#annualTaxTableBody tr');
+    const taxData = [];
+    const year = document.getElementById('year').value;
+
+    rows.forEach(row => {
+        const id = row.cells[0].innerText;
+        const totalSalary = parseFloat(row.cells[2].innerText) || 0;
+        const totalTax = parseFloat(row.cells[3].innerText) || 0;
+        const netSalary = parseFloat(row.cells[4].innerText) || 0;
+
+        taxData.push({ id, year, totalSalary, totalTax, netSalary });
+    });
+
+    fetch('ketoan.php?action=save_annual_tax', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taxes: taxData })
+    }).then(response => response.json())
+        .then(result => alert(result.message))
+        .catch(error => console.error('Lỗi khi lưu:', error));
 }

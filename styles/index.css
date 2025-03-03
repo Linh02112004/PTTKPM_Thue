@@ -35,11 +35,11 @@ header a:hover {
 }
 
 .register-button {
-    margin-right: 1cm; 
+    margin-right: 1cm;
 }
 
 main {
-    margin-top: 60px; 
+    margin-top: 60px;
     flex: 1;
     display: flex;
     justify-content: center;
@@ -48,6 +48,7 @@ main {
     background-color: #d9eaf7;
     padding: 20px;
 }
+
 
 .form-container {
     background: white;
@@ -64,10 +65,11 @@ h2 {
 label {
     display: block;
     margin-bottom: 5px;
-    text-align: left; 
+    text-align: left;
 }
 
-input, select {
+input,
+select {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
@@ -94,16 +96,16 @@ button:hover {
 }
 
 .welcome-message {
-    font-size: 3.75em;
+    font-size: 30px;
     font-weight: bold;
-    font-family: 'Pacifico', cursive;
-    color: #333;
-    margin: 0;
+    font-family: 'Arial';
+    color: white;
+    margin-right: 600px;
 }
 
 .required {
-    color: red; 
-    margin-left: 5px; 
+    color: red;
+    margin-left: 5px;
 }
 
 @media (max-width: 600px) {
