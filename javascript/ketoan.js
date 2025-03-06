@@ -306,9 +306,9 @@ function saveSalaries() {
 
     rows.forEach(row => {
         const id = row.cells[0].innerText;
-        const salary = parseFloat(document.getElementById(`salary-${id}`).value) || 0;
-        const tax = parseFloat(document.getElementById(`tax-${id}`).innerText) || 0;
-        const netSalary = parseFloat(document.getElementById(`netSalary-${id}`).innerText) || 0;
+        const salary = parseFloat(document.getElementById(`salary-${id}`).value.replace(/,/g, '')) || 0;
+        const tax = parseFloat(document.getElementById(`tax-${id}`).innerText.replace(/,/g, '')) || 0;
+        const netSalary = parseFloat(document.getElementById(`netSalary-${id}`).innerText.replace(/,/g, '')) || 0;
 
         if (salary > 0) {
             salaryData.push({ id, month, year, salary, tax, netSalary });
@@ -338,11 +338,14 @@ function saveSalaries() {
         });
 }
 
+// Gắn sự kiện cho nút "Xem quyết toán thuế"
+document.getElementById('searchTaxBtn').addEventListener('click', loadAnnualTax);
+
 // 5. Quyết toán thuế
 function loadAnnualTax(event) {
     if (event) event.preventDefault();
 
-    const year = document.getElementById('year').value;
+    const year = document.getElementById('yearTax').value;
     const department = document.getElementById('department').value;
     const currentYear = new Date().getFullYear();
 
@@ -350,7 +353,6 @@ function loadAnnualTax(event) {
         alert(`Chưa hết năm để xem quyết toán thuế!\nChỉ có thể xem năm <= ${currentYear - 1}.`);
         return;
     }
-
 
     fetch(`ketoan.php?action=get_annual_tax&year=${year}&department=${department}`)
         .then(response => response.json())

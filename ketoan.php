@@ -318,7 +318,11 @@ case 'setup_all_deductions':
             $stmt->bind_param("siiddd", $id, $month, $year, $salary, $tax, $netSalary);
             $stmt->execute();
         }
-        
+
+        error_log("Received salary: " . $salary);
+        error_log("Received tax: " . $tax);
+        error_log("Received net salary: " . $netSalary);
+
         echo json_encode(['message' => 'Dữ liệu lương đã được lưu thành công!']);
         break;    
 

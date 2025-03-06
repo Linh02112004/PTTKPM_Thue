@@ -79,18 +79,15 @@ switch ($action) {
         
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
-                    $salary = $row['salary'] !== null ? number_format($row['salary'], 2) : 'Chưa có';
-                    $tax = $row['tax'] !== null ? number_format($row['tax'], 2) : 'Chưa có';
-                    $netSalary = $row['netSalary'] !== null ? number_format($row['netSalary'], 2) : 'Chưa có';
-        
                     echo "<tr>
                             <td>" . htmlspecialchars($row['id']) . "</td>
                             <td>" . htmlspecialchars($row['full_name']) . "</td>
-                            <td>" . $salary . "</td>
-                            <td>" . $tax . "</td>
-                            <td>" . $netSalary . "</td>
+                            <td>" . number_format($row['salary'], 2) . "</td>
+                            <td>" . number_format($row['tax'], 2) . "</td>
+                            <td>" . number_format($row['netSalary'], 2) . "</td>
                           </tr>";
                 }
+
             } else {
                 echo "<tr><td colspan='5'>Không có dữ liệu nhân viên!</td></tr>";
             }
