@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <link rel="icon" href="./Anh/header/anh1.jpg" type="image/jpeg">
   <link rel="stylesheet" href="./styles/nhanvien.css">
 </head>
+
 <body>
   <div class="container">
     <div class="sidebar">
@@ -16,8 +18,11 @@
       <button class="button active" onclick="setActiveButton(this)">Nhập thông tin</button>
       <button class="button " onclick="setActiveButton(this)">Xem lương và thuế cá nhân</button>
       <button class="button" onclick="setActiveButton(this)">Tính thử thuế</button>
+      <form id="logoutForm" action="logout.php" method="post">
+        <button class="button" type="submit">Đăng xuất</button>
+      </form>
     </div>
-    
+
     <div class="content">
       <div id="info-section">
         <!-- Phần nhập thông tin -->
@@ -66,11 +71,11 @@
         <div class="header">
           <button class="calculate-button" onclick="calculateTaxYear()">Quyết toán thuế</button>
           <div>
-              <label for="search-year">Năm:</label>
-              <input type="text" id="search-year" placeholder="Nhập năm">
-              <button class="search-button" onclick="searchSalary()">Tìm kiếm</button>
+            <label for="search-year">Năm:</label>
+            <input type="text" id="search-year" placeholder="Nhập năm">
+            <button class="search-button" onclick="searchSalary()">Tìm kiếm</button>
           </div>
-      </div>
+        </div>
 
         <table id="salary-table" style="display: none;">
           <thead>
@@ -87,7 +92,7 @@
             <!-- Các hàng sẽ được thêm qua JavaScript -->
           </tbody>
         </table>
-      </div>    
+      </div>
 
       <div id="tax-section" style="display: none;">
         <div class="input-group">
@@ -106,7 +111,7 @@
           <p id="tax-amount" style="font-weight: bold; font-size: 1.2em;"></p>
           <p id="tax-amount-words" style="font-style: italic;"></p>
           <p id="tax-details" style="margin-top: 10px;"></p>
-      </div>
+        </div>
       </div>
     </div>
   </div>
@@ -160,4 +165,5 @@
   </div>
   <script src="./javascript/nhanvien.js"></script>
 </body>
+
 </html>

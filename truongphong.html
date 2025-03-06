@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,14 @@
 
     <!-- Thư viện jsPDF (xuất PDF) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+
     <!-- Thư viện SheetJS (xuất Excel) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
 
     <link rel="stylesheet" href="./styles/truongphong.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
     <div class="container">
         <!-- Sidebar -->
@@ -27,12 +29,16 @@
                 <input type="file" id="photo-input" onchange="loadPhoto(event)" accept="image/*" style="display: none;">
                 <a class="update-photo" onclick="openPhotoInput()">Cập nhật ảnh</a>
                 <p>Trưởng phòng</p>
+                <p id="department-name"></p> <!-- Tên phòng ban -->
             </div>
 
             <!-- Các nút chuyển tab -->
             <button class="btn active" onclick="switchTab('tab-employee-management')">Quản lý nhân viên</button>
             <button class="btn" onclick="switchTab('tab-salary-tax-view')">Xem lương và thuế</button>
             <button class="btn" onclick="switchTab('tab-tax-summary')">Xem quyết toán thuế</button>
+            <form id="logoutForm" action="logout.php" method="post">
+                <button class="btn" type="submit">Đăng xuất</button>
+            </form>
         </div>
 
         <!-- Main Content -->
@@ -40,12 +46,16 @@
             <!-- Tab: Quản lý nhân viên -->
             <div id="tab-employee-management" class="tab-content" style="display: block;">
                 <h2>Quản lý nhân viên</h2>
+
+                <!-- Bảng hiển thị nhân viên -->
+                <h3>Danh sách nhân viên phòng kinh doanh</h3>
+                <h3 id="department-name"></h3>
                 <div class="table-container">
-                    <table>
+                    <table border="1">
                         <thead>
                             <tr>
-                                <th>Họ tên</th>
                                 <th>MSNV</th>
+                                <th>Họ tên</th>
                                 <th>Ngày sinh</th>
                                 <th>Địa chỉ</th>
                                 <th>SDT</th>
@@ -56,7 +66,6 @@
                             </tr>
                         </thead>
                         <tbody id="employee-table-body">
-                            <!-- Hàng dữ liệu sẽ được thêm bằng JavaScript -->
                         </tbody>
                     </table>
                 </div>
@@ -66,45 +75,45 @@
             <div id="tab-salary-tax-view" class="tab-content" style="display: none;">
                 <h2>Xem lương và thuế</h2>
                 <div class="filter-section">
-                    <!-- Chọn tháng -->
-                    <label for="month-view">Chọn tháng:</label>
-                    <select id="month-view" class="filter-input">
-                        <option value="1">Tháng 1</option>
-                        <option value="2">Tháng 2</option>
-                        <option value="3">Tháng 3</option>
-                        <option value="4">Tháng 4</option>
-                        <option value="5">Tháng 5</option>
-                        <option value="6">Tháng 6</option>
-                        <option value="7">Tháng 7</option>
-                        <option value="8">Tháng 8</option>
-                        <option value="9">Tháng 9</option>
-                        <option value="10">Tháng 10</option>
-                        <option value="11">Tháng 11</option>
-                        <option value="12">Tháng 12</option>
-                    </select>
+                    <form id="filterForm" method="get" action="truongphong.php?action=get_salaries">
+                        <input type="hidden" name="action" value="get_salaries">
 
-                    <!-- Nhập năm -->
-                    <label for="year-view">Nhập năm:</label>
-                    <input type="number" id="year-view" class="filter-input" placeholder="Nhập năm">
+                        <label for="month">Chọn tháng:</label>
+                        <select id="month" name="month">
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
 
-                    <!-- Nút tìm kiếm -->
-                    <button class="search-btn" onclick="viewSalaryAndTax()">Tìm kiếm</button>
-                </div>
+                        <label for="year">Nhập năm:</label>
+                        <input type="number" id="year" name="year" placeholder="VD: 2024" min="2000" max="2100"
+                            required>
 
-                <!-- Bảng hiển thị lương và thuế -->
-                <div class="table-container" id="salary-tax-table-container" style="display: none;">
-                    <table>
+                        <button class="search-btn" onclick="viewSalaryAndTax()">Tải danh sách</button>
+                    </form>
+
+                    <h2>Bảng lương cho nhân viên</h2>
+                    <table id="employeeTable" border="1">
                         <thead>
                             <tr>
-                                <th>Họ và tên</th>
                                 <th>MSNV</th>
-                                <th>MS thuế</th>
-                                <th>Lương</th>
-                                <th>Thuế</th>
+                                <th>Họ tên</th>
+                                <th>Lương (VND)</th>
+                                <th>Thuế (VND)</th>
+                                <th>Lương thực nhận (VND)</th>
                             </tr>
                         </thead>
                         <tbody id="salary-tax-table-body">
-                            <!-- Nội dung sẽ được thêm bằng JavaScript -->
+                            <!-- Dữ liệu sẽ được PHP đổ vào đây -->
                         </tbody>
                     </table>
                 </div>
@@ -123,18 +132,18 @@
                     <input type="number" id="yearInput" class="filter-input" placeholder="Nhập năm">
                     <button class="search-btn" onclick="search()">Tìm kiếm</button>
                 </div>
-            
+
                 <div id="table-container" class="table-container" style="display: none;">
                     <table>
                         <thead>
                             <tr>
-                                <th>STT</th>
-                                <th>Họ tên</th>
                                 <th>MSNV</th>
+                                <th>Họ tên</th>
                                 <th>MS thuế</th>
                                 <th>Tổng lương</th>
                                 <th>Tổng thuế đã nộp</th>
                                 <th>Tổng thuế phải nộp</th>
+                                <th>Tổng lương thực nhận</th>
                                 <th>Quyết toán</th>
                             </tr>
                         </thead>
@@ -143,19 +152,21 @@
                         </tbody>
                     </table>
                 </div>
-            
+
                 <footer id="footer" style="display: none;">
                     <p id="total-salary">Tổng lương: 0</p>
                     <p id="total-tax-paid">Tổng thuế đã nộp: 0</p>
                     <p id="total-tax-due">Tổng thuế phải nộp: 0</p>
+                    <p id="total-reconciliation">Tổng lương thực nhận: 0</p>
                     <p id="total-reconciliation">Tổng quyết toán: 0</p>
                     <a href="#" class="export">Xuất báo cáo</a>
                 </footer>
-            </div>            
+            </div>
         </div>
     </div>
 
     <!-- Script -->
     <script src="./javascript/truongphong.js"></script>
 </body>
+
 </html>

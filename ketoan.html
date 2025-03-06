@@ -259,9 +259,10 @@
             <div id="tab-tax-summary" class="tab-content" style="display: none;">
                 <h2>Xem quyết toán thuế</h2>
                 <div class="filter-section">
-                    <form id="annualTaxForm" onsubmit="loadAnnualTax(event)">
-                        <label for="year">Nhập năm:</label>
-                        <input type="number" id="year" name="year" min="2000" max="2100" required>
+                    <form id="annualTaxForm">
+                        <label for="yearTax">Nhập năm:</label>
+                        <input type="number" id="yearTax" name="year" placeholder="VD: 2024" min="2000" max="2100"
+                            required>
 
                         <label for="department">Chọn phòng ban:</label>
                         <select id="department" name="department">
@@ -272,26 +273,26 @@
                             <option value="kinh doanh">Kinh doanh</option>
                         </select>
 
-                        <button type="submit" class="search-btn">Xem quyết toán thuế</button>
+                        <button id="searchTaxBtn" type="button" class="search-btn">Xem quyết toán thuế</button>
                     </form>
-                </div>
 
-                <!-- Bảng quyết toán thuế -->
-                <h2>Bảng quyết toán thuế năm</h2>
-                <table id="annualTaxTable" border="1">
-                    <thead>
-                        <tr>
-                            <th>MSNV</th>
-                            <th>Họ tên</th>
-                            <th>Tổng lương (VND)</th>
-                            <th>Tổng thuế (VND)</th>
-                            <th>Lương thực nhận (VND)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="annualTaxTableBody">
-                        <!-- Dữ liệu sẽ được thêm từ PHP -->
-                    </tbody>
-                </table>
+                    <!-- Bảng quyết toán thuế -->
+                    <h2>Bảng quyết toán thuế năm</h2>
+                    <table id="annualTaxTable" border="1">
+                        <thead>
+                            <tr>
+                                <th>MSNV</th>
+                                <th>Họ tên</th>
+                                <th>Tổng lương (VND)</th>
+                                <th>Tổng thuế (VND)</th>
+                                <th>Lương thực nhận (VND)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annualTaxTableBody">
+                            <!-- Dữ liệu sẽ được thêm từ PHP -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <footer id="footer" style="display: none;">
@@ -306,7 +307,7 @@
     </div>
 
     <!-- Script -->
-    <script src="./script.js"></script>
+    <script src="./javascript/ketoan.js"></script>
 
 </body>
 

@@ -231,7 +231,7 @@ case 'setup_all_deductions':
     
         $stmt->execute();
         $result = $stmt->get_result();
-    
+            
         echo "<tbody id='salaryTableBody'>";
     
         if ($result->num_rows > 0) {
@@ -283,26 +283,30 @@ case 'setup_all_deductions':
         
         echo json_encode(['message' => 'Dữ liệu lương đã được lưu thành công!']);
         break;    
-    
+
     // 5. Xem quyết toán thuế
     case 'get_annual_tax':
-        header('Content-Type: application/json');
-    
-        $year = $_GET['year'] ?? null;
+        $format = $_GET['format'] ?? 'json';
+        $year = isset($_GET['year']) ? intval($_GET['year']) : null;
         $department = $_GET['department'] ?? 'all';
         $currentYear = date("Y");
     
         if (!$year || $year >= $currentYear) {
-            echo json_encode(['error' => "Chưa hết năm để xem quyết toán thuế! Chỉ có thể xem năm <= $currentYear."]);
-            exit;
+            echo json_encode([
+                "status" => "error",
+                "message" => "Chưa hết năm để xem quyết toán thuế! Chỉ có thể xem năm <= " . ($currentYear - 1) . "."
+            ]);
+            exit();
         }
     
         if (!$department) {
-            echo json_encode(['error' => "Thiếu thông tin phòng ban!"]);
-            exit;
+            echo json_encode([
+                "status" => "error",
+                "message" => "Thiếu thông tin phòng ban!"
+            ]);
+            exit();
         }
     
-        // Lấy mức giảm trừ
         $stmtDeduction = $conn->prepare("SELECT selfDeduction, dependentDeduction FROM deduction WHERE year = ? LIMIT 1");
         $stmtDeduction->bind_param("i", $year);
         $stmtDeduction->execute();
@@ -310,33 +314,19 @@ case 'setup_all_deductions':
         $deduction = $deductionResult->fetch_assoc();
     
         if (!$deduction) {
-            echo json_encode(['error' => "Chưa thiết lập mức giảm trừ cho năm $year."]);
+            echo "<tr><td colspan='5'>Chưa thiết lập mức giảm trừ cho năm $year.</td></tr>";
             exit;
         }
     
         $selfDeduction = $deduction['selfDeduction'];
         $dependentDeduction = $deduction['dependentDeduction'];
     
-        // Lấy lương 12 tháng từ bảng monthTax
         if ($department === 'all') {
-            $stmt = $conn->prepare("
-                SELECT u.id, u.full_name, u.dependent, 
-                       SUM(m.salary) AS totalSalary
-                FROM users u
-                LEFT JOIN monthTax m ON u.id = m.id AND m.year = ?
-                GROUP BY u.id
-            ");
-            $stmt->bind_param("i", $year);
+            $stmt = $conn->prepare("SELECT u.id, u.full_name, u.dependent, COUNT(m.month) AS monthCount, SUM(m.salary) AS totalSalary, SUM(y.tax) AS totalTax FROM users u LEFT JOIN monthTax m ON u.id = m.id AND m.year = ? LEFT JOIN yearTax y ON u.id = y.id AND y.year = ? GROUP BY u.id");
+            $stmt->bind_param("ii", $year, $year);
         } else {
-            $stmt = $conn->prepare("
-                SELECT u.id, u.full_name, u.dependent, 
-                       SUM(m.salary) AS totalSalary
-                FROM users u
-                LEFT JOIN monthTax m ON u.id = m.id AND m.year = ?
-                WHERE u.department = ?
-                GROUP BY u.id
-            ");
-            $stmt->bind_param("is", $year, $department);
+            $stmt = $conn->prepare("SELECT u.id, u.full_name, u.dependent, COUNT(m.month) AS monthCount, SUM(m.salary) AS totalSalary, SUM(y.tax) AS totalTax FROM users u LEFT JOIN monthTax m ON u.id = m.id AND m.year = ? LEFT JOIN yearTax y ON u.id = y.id AND y.year = ? WHERE u.department = ? GROUP BY u.id");
+            $stmt->bind_param("iis", $year, $year, $department);
         }
     
         $stmt->execute();
@@ -344,44 +334,72 @@ case 'setup_all_deductions':
         $employees = [];
     
         while ($row = $result->fetch_assoc()) {
+            if ($row['monthCount'] < 12) {
+                echo "<tr><td colspan='5'>Chưa đủ dữ liệu để quyết toán cho năm $year.</td></tr>";
+                exit;
+            }
+    
+            $netSalary = ($row['totalSalary'] - $row['totalTax']);
+    
             $employees[] = [
                 'id' => $row['id'],
                 'full_name' => $row['full_name'],
                 'dependent' => $row['dependent'] ?? 0,
                 'totalSalary' => $row['totalSalary'] ?? 0,
-                'selfDeduction' => $selfDeduction,
-                'dependentDeduction' => $dependentDeduction
+                'totalTax' => $row['totalTax'] ?? 0,
+                'netSalary' => $netSalary,
+                'selfDeduction' => $selfDeduction,'dependentDeduction' => $dependentDeduction
             ];
         }
     
-        echo json_encode($employees);
+        if (empty($employees)) {
+            echo "<tr><td colspan='5'>Không tìm thấy bản ghi lương nào cho năm $year.</td></tr>";
+            exit;
+        }
+    
+        if ($format === 'html') {
+            echo "<tbody id='annualTaxTableBody'>";
+            foreach ($employees as $employee) {
+                echo "<tr>
+                        <td>{$employee['id']}</td>
+                        <td>{$employee['full_name']}</td>
+                        <td>" . number_format($employee['totalSalary'], 2) . " VND</td>
+                        <td>" . number_format($employee['totalTax'], 2) . " VND</td>
+                        <td>" . number_format($employee['netSalary'], 2) . " VND</td>
+                      </tr>";
+            }
+            echo "</tbody>";
+        } else {
+            echo json_encode($employees);
+        }
+        $stmt->close();
         break;
     
-        // Lưu quyết toán thuế năm
-case 'save_annual_tax':
-    header('Content-Type: application/json');
-    $data = json_decode(file_get_contents('php://input'), true);
+    // Lưu quyết toán thuế năm
+    case 'save_annual_tax':
+        header('Content-Type: application/json');
+        $data = json_decode(file_get_contents('php://input'), true);
 
-    if (!isset($data['taxes']) || empty($data['taxes'])) {
-        echo json_encode(['error' => 'Không có dữ liệu để lưu!']);
-        exit;
-    }
+        if (!isset($data['taxes']) || empty($data['taxes'])) {
+            echo json_encode(['error' => 'Không có dữ liệu để lưu!']);
+            exit;
+        }
 
-    $stmt = $conn->prepare("REPLACE INTO yearTax (id, year, totalSalary, totalTax, netSalary) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("REPLACE INTO yearTax (id, year, totalSalary, totalTax, netSalary) VALUES (?, ?, ?, ?, ?)");
 
-    foreach ($data['taxes'] as $employee) {
-        $id = $employee['id'];
-        $year = $employee['year'];
-        $totalSalary = $employee['totalSalary'];
-        $totalTax = $employee['totalTax'];
-        $netSalary = $employee['netSalary'];
+        foreach ($data['taxes'] as $employee) {
+            $id = $employee['id'];
+            $year = $employee['year'];
+            $totalSalary = $employee['totalSalary'];
+            $totalTax = $employee['totalTax'];
+            $netSalary = $employee['netSalary'];
 
-        $stmt->bind_param("siddd", $id, $year, $totalSalary, $totalTax, $netSalary);
-        $stmt->execute();
-    }
+            $stmt->bind_param("siddd", $id, $year, $totalSalary, $totalTax, $netSalary);
+            $stmt->execute();
+        }
 
-    echo json_encode(['message' => 'Dữ liệu quyết toán thuế đã được lưu thành công!']);
-    break;
+        echo json_encode(['message' => 'Dữ liệu quyết toán thuế đã được lưu thành công!']);
+        break;
     
     default:
         echo "Chọn hành động hợp lệ!";

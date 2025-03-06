@@ -229,6 +229,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <button onclick="closeModal()">Đóng</button>
   </div>
-  <script src="./script.js"></script>
+
+  <!-- Script -->
+  <script src="./javascript/nhanvien.js"></script>
+  
 </body>
 </html>
