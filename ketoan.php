@@ -10,6 +10,38 @@ if (isset($_GET['action'])) {
     $action = '';
 }
 
+function calculateTax($salary, $selfDeduction, $dependentDeduction, $dependent) {
+    $deductionsForDependents = $dependentDeduction * $dependent;
+    $tncn = $salary - $selfDeduction - $deductionsForDependents;
+
+    $taxAmount = 0;
+
+    if ($tncn > 0) {
+        if ($tncn <= 5000000) {
+            $taxAmount = $tncn * 0.05;
+        } elseif ($tncn <= 10000000) {
+            $taxAmount = $tncn * 0.10 - 250000;
+        } elseif ($tncn <= 18000000) {
+            $taxAmount = $tncn * 0.15 - 750000;
+        } elseif ($tncn <= 32000000) {
+            $taxAmount = $tncn * 0.20 - 1650000;
+        } elseif ($tncn <= 52000000) {
+            $taxAmount = $tncn * 0.25 - 3250000;
+        } elseif ($tncn <= 80000000) {
+            $taxAmount = $tncn * 0.30 - 5850000;
+        } else {
+            $taxAmount = $tncn * 0.35 - 9850000;
+        }
+    }
+
+    $netSalary = $salary - $taxAmount;
+
+    return [
+        'tax' => $taxAmount,
+        'netSalary' => $netSalary
+    ];
+}
+
 switch ($action) {
     // 1. Quản lý nhân viên (Xem và xóa)
     // Lấy danh sách nhân viên
@@ -236,20 +268,26 @@ case 'setup_all_deductions':
     
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $salary = $row['salary'] ?? '';
-                $tax = $row['tax'] ?? 0;
-                $netSalary = $row['netSalary'] ?? 0;
-    
+                $salary = $row['salary'] ?? 0;
+                $dependent = $row['dependent'] ?? 0;
+        
+                // Tính thuế và lương ròng bằng PHP
+                $taxResult = calculateTax($salary, $selfDeduction, $dependentDeduction, $dependent);
+                $tax = $taxResult['tax'];
+                $netSalary = $taxResult['netSalary'];
+        
                 echo "<tr>
-                        <td>{$row['id']}</td>
-                        <td>{$row['full_name']}</td>
-                        <td><input type='number' id='salary-{$row['id']}' 
+                    <td>{$row['id']}</td>
+                    <td>{$row['full_name']}</td>
+                    <td>
+                        <input type='number' id='salary-{$row['id']}' 
                             placeholder='Nhập lương' 
                             value='{$salary}' 
-                            oninput='calculateTax(\"{$row['id']}\", {$selfDeduction}, {$dependentDeduction}, {$row['dependent']})'></td>
-                        <td id='tax-{$row['id']}'>" . number_format($tax, 2) . "</td>
-                        <td id='netSalary-{$row['id']}'>" . number_format($netSalary, 2) . "</td>
-                      </tr>";
+                            oninput='calculateTax(\"{$row['id']}\", {$selfDeduction}, {$dependentDeduction}, {$row['dependent']})'>
+                    </td>
+                    <td id='tax-{$row['id']}'>" . number_format($tax, 2) . "</td>
+                    <td id='netSalary-{$row['id']}'>" . number_format($netSalary, 2) . "</td>
+                </tr>";
             }
         } else {
             echo "<tr><td colspan='5'>Không có dữ liệu nhân viên!</td></tr>";

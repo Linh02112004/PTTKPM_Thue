@@ -335,7 +335,6 @@ function saveSalaries() {
         })
         .catch(error => {
             console.error('Lỗi khi lưu lương:', error);
-            alert('Có lỗi xảy ra khi lưu dữ liệu!');
         });
 }
 
