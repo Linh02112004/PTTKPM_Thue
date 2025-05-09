@@ -46,6 +46,10 @@ main {
     align-items: center;
     text-align: center;
     background-color: #d9eaf7;
+    background-image: url(./background.jpg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     padding: 20px;
 }
 
